@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36429.23 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FINANCE.TRACKER.API", "FINANCE.TRACKER.API\FINANCE.TRACKER.API.csproj", "{C543877B-5EAC-49C7-A90A-65F49349048A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C543877B-5EAC-49C7-A90A-65F49349048A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C543877B-5EAC-49C7-A90A-65F49349048A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C543877B-5EAC-49C7-A90A-65F49349048A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C543877B-5EAC-49C7-A90A-65F49349048A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5B4D81D4-B145-4943-9900-5FD8BA86984B}
+	EndGlobalSection
+EndGlobal
