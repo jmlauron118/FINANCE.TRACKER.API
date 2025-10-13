@@ -1,16 +1,19 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace FINANCE.TRACKER.API.Model.Category
+namespace FINANCE.TRACKER.API.Models.Category
 {
-    public class ExpensesCategoryModel
+    public class BudgetCategoryModel
     {
         [Key]
-        public int ExpensesCategoryId { get; set; }
+        public int BudgetCategoryId { get; set; }
 
-        [Column(TypeName= "nvarchar(50)")]
-        public string? ExpensesCategoryName { get; set; }
-        public string? ExpensesCategoryDescription { get; set; }
+        [Column(TypeName = "nvarchar(50)")]
+        public string? BudgetCategoryName { get; set; }
+
+        [Column(TypeName = "nvarchar(150)")]
+        public string? BudgetCategoryDescription { get; set; }
+
         public int IsActive { get; set; }
         public int CreatedBy { get; set; }
         public DateTime DateCreated { get; set; }
