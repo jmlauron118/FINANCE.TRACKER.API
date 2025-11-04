@@ -2,6 +2,7 @@
 using FINANCE.TRACKER.API.Models.DTO.UserManager.UserDTO;
 using FINANCE.TRACKER.API.Models.UserManager;
 using FINANCE.TRACKER.API.Services.Interfaces.UserManager;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
@@ -60,6 +61,10 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
                 throw new InvalidOperationException("Username already exists");
             }
 
+            var hasher = new PasswordHasher<UserRequestDTO>();
+
+            user.Password = hasher.HashPassword(user, user.Password);
+
             var newUser = new UserModel
             {
                 Firstname = user.Firstname,
@@ -105,6 +110,35 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
             await _context.SaveChangesAsync();
 
             return await GetUserById(userToUpdate.UserId);
+        }
+
+        public async Task<IEnumerable<UserModuleResponseDTO>> GetUserModules(int userId)
+        {
+            var userModules = await (from moduleAccess in _context.ModuleAccesses
+                                     join moduleAction in _context.ModuleActions on moduleAccess.ModuleActionId equals moduleAction.ModuleActionId
+                                     join module in _context.Modules on moduleAction.ModuleId equals module.ModuleId
+                                     join action in _context.Actions on moduleAction.ActionId equals action.ActionId
+                                     join userRole in _context.UserRoles on moduleAccess.UserRoleId equals userRole.UserRoleId
+                                     join user in _context.Users on userRole.UserId equals user.UserId
+                                     join role in _context.Roles on userRole.RoleId equals role.RoleId
+                                     where module.IsActive == 1 && action.IsActive == 1 && user.IsActive == 1 && role.IsActive == 1 && user.UserId == userId
+                                     orderby module.SortOrder
+                                     select new UserModuleResponseDTO
+                                     {
+                                         ModuleId = module.ModuleId,
+                                         ModuleName = module.ModuleName,
+                                         ModulePage = module.ModulePage,
+                                         Icon = module.Icon,
+                                         SortNo = module.SortOrder
+                                     }).ToListAsync();
+
+            var uniqueModules = userModules
+                .GroupBy(m => m.ModuleId)
+                .Select(g => g.First())
+                .OrderBy(m => m.SortNo)
+                .ToList();
+
+            return uniqueModules;
         }
     }
 }

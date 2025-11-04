@@ -28,7 +28,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
                     Icon = m.Icon,
                     SortOrder = m.SortOrder,
                     IsActive = m.IsActive
-                }).ToListAsync();
+                }).OrderBy(m => m.SortOrder).ToListAsync();
         }
 
         public async Task<ModuleResponseDTO> GetModuleById(int id)
@@ -56,7 +56,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
 
         public async Task<ModuleResponseDTO> AddModule(ModuleRequestDTO module)
         {
-            var existingModule = await _context.Modules.FirstOrDefaultAsync(m => m.ModuleName == module.ModuleName);
+            var existingModule = await _context.Modules.FirstOrDefaultAsync(m => m.ModuleName == module.ModuleName || m.ModulePage == module.ModulePage);
 
             if (existingModule != null)
             {

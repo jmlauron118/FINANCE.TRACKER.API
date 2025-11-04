@@ -20,7 +20,7 @@ namespace FINANCE.TRACKER.API.Models.UserManager
         [Column(TypeName = "nvarchar(50)")]
         public string? Username { get; set; }
 
-        [Column(TypeName = "nvarchar(50)")]
+        [Column(TypeName = "nvarchar(max)")]
         public string? Password { get; set; }
 
         public int IsActive { get; set; }

@@ -61,11 +61,11 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
 
         public async Task<UserRoleResponseDTO> AddUserRole(UserRoleRequestDTO userRole)
         {
-            var existingUserRole = await _context.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == userRole.UserId && ur.RoleId == userRole.RoleId);
+            var existingUserRole = await _context.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == userRole.UserId);
 
             if (existingUserRole != null)
             {
-                throw new InvalidOperationException("User role already exists");
+                throw new InvalidOperationException("The selected user already has a registered role.");
             }
 
             var newUserRole = new UserRoleModel
@@ -84,11 +84,11 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
 
         public async Task<UserRoleResponseDTO> ModifyUserRole(UserRoleModifyDTO userRole)
         {
-            var existingUserRole = await _context.UserRoles.FirstOrDefaultAsync(ur => (ur.UserId == userRole.UserId && ur.RoleId == userRole.RoleId) && ur.UserRoleId == userRole.UserRoleId);
+            var existingUserRole = await _context.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == userRole.UserId && ur.UserRoleId != userRole.UserRoleId);
 
             if (existingUserRole != null)
             {
-                throw new InvalidOperationException("User role already exists");
+                throw new InvalidOperationException("The selected user already has a registered role.");
             }
 
             var userRoleToUpdate = await _context.UserRoles.FindAsync(userRole.UserRoleId);
@@ -106,6 +106,28 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
             await _context.SaveChangesAsync();
 
             return await GetUserRoleById(userRoleToUpdate.UserRoleId);
+        }
+
+        public async Task RemoveUserRole(int id)
+        {
+            var userRoleToDelete = await _context.UserRoles.FindAsync(id);
+
+            if(userRoleToDelete != null)
+            {
+                var moduleAccess = await _context.ModuleAccesses.FirstOrDefaultAsync(mac => mac.UserRoleId == id);
+
+                if(moduleAccess != null)
+                {
+                    _context.ModuleAccesses.Remove(moduleAccess);
+                }
+
+                _context.UserRoles.Remove(userRoleToDelete);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                throw new InvalidOperationException("User role not found");
+            }
         }
     }
 }

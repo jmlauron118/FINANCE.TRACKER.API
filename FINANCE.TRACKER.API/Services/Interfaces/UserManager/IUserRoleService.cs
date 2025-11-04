@@ -11,5 +11,7 @@ namespace FINANCE.TRACKER.API.Services.Interfaces.UserManager
         Task<UserRoleResponseDTO> AddUserRole(UserRoleRequestDTO userRole);
 
         Task<UserRoleResponseDTO> ModifyUserRole(UserRoleModifyDTO userRole);
+
+        Task RemoveUserRole(int id);
     }
 }

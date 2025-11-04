@@ -8,7 +8,6 @@ using FINANCE.TRACKER.API.Services.Interfaces.UserManager;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
 namespace FINANCE.TRACKER.API
@@ -34,7 +33,6 @@ namespace FINANCE.TRACKER.API
             builder.Services.AddScoped<IModuleAccessService, ModuleAccessService>();
 
             //JWT configuration
-            JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
             builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
             builder.Services.AddScoped<IJwtService, JwtService>();
 
@@ -89,7 +87,6 @@ namespace FINANCE.TRACKER.API
 
             app.UseCors("AllowAngularApp");
             app.UseHttpsRedirection();
-            app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
             app.Run();

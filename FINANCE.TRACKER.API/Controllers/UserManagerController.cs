@@ -6,12 +6,15 @@ using FINANCE.TRACKER.API.Models.DTO.UserManager.RoleDTO;
 using FINANCE.TRACKER.API.Models.DTO.UserManager.UserDTO;
 using FINANCE.TRACKER.API.Models.DTO.UserManager.UserRoleDTO;
 using FINANCE.TRACKER.API.Services.Interfaces.UserManager;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FINANCE.TRACKER.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class UserManagerController : Controller
     {
         private readonly IUserService _userService;
@@ -82,6 +85,34 @@ namespace FINANCE.TRACKER.API.Controllers
             catch (InvalidOperationException ex)
             {
                 return Conflict(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("get-user-modules")]
+        public async Task<IActionResult> GetUserModules()
+        {
+            try
+            {
+                var userId = int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
+                string fullname = User.FindFirst(ClaimTypes.Name)?.Value.ToString() ?? "";
+                
+                if (userId == 0)
+                {
+                    return NotFound(new { Message = "User not found!"});
+                }
+
+                var userModules = await _userService.GetUserModules(userId);
+
+                if(userModules.Count() == 0)
+                {
+                    return NotFound(new { Message = "No module(s) assigned. Please contact the administrator." });
+                }
+
+                return Ok(userModules);
+            }
+            catch(InvalidCastException ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
 
@@ -271,6 +302,21 @@ namespace FINANCE.TRACKER.API.Controllers
             catch (InvalidOperationException ex)
             {
                 return Conflict(new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("remove-user-role")]
+        public async Task<IActionResult> RemoveUserRole(int id)
+        {
+            try
+            {
+                await _userRoleService.RemoveUserRole(id);
+
+                return NoContent();
+            }
+            catch(InvalidOperationException ex)
+            {
+                return NotFound(new { message = ex.Message });
             }
         }
         #endregion UserRole

@@ -26,6 +26,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
                                     ModuleId = m.ModuleId,
                                     ModuleName = m.ModuleName,
                                     ModuleDescription = m.Description,
+                                    Icon = m.Icon,
                                     ActionId = a.ActionId,
                                     ActionName = a.ActionName,
                                     ActionDescription = a.Description
@@ -46,6 +47,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
                                    ModuleId = m.ModuleId,
                                    ModuleName = m.ModuleName,
                                    ModuleDescription = m.Description,
+                                   Icon = m.Icon,
                                    ActionId = a.ActionId,
                                    ActionName = a.ActionName,
                                    ActionDescription = a.Description
