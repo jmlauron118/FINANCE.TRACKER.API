@@ -3,16 +3,19 @@ using FINANCE.TRACKER.API.Models.DTO.UserManager.ModuleDTO;
 using FINANCE.TRACKER.API.Models.UserManager;
 using FINANCE.TRACKER.API.Services.Interfaces.UserManager;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
 {
     public class ModuleService : IModuleService
     {
         private readonly AppDbContext _context;
+        private readonly IHttpContextAccessor _contextAccessor;
 
-        public ModuleService(AppDbContext context)
+        public ModuleService(AppDbContext context, IHttpContextAccessor contextAccessor)
         {
             _context = context;
+            _contextAccessor = contextAccessor;
         }
 
         public async Task<IEnumerable<ModuleResponseDTO>> GetAllModules(int status)
@@ -71,7 +74,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
                 Icon = module.Icon,
                 SortOrder = module.SortOrder,
                 IsActive = module.IsActive,
-                CreatedBy = 1, // TODO: Replace with actual user ID
+                CreatedBy = int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0,
                 DateCreated = DateTime.Now
             };
 
@@ -103,7 +106,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
             moduleToUpdate.Icon = module.Icon;
             moduleToUpdate.SortOrder = module.SortOrder;
             moduleToUpdate.IsActive = module.IsActive;
-            moduleToUpdate.UpdatedBy = 1; // TODO: Replace with actual user ID
+            moduleToUpdate.UpdatedBy = int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
             moduleToUpdate.DateUpdated = DateTime.Now;
 
             await _context.SaveChangesAsync();

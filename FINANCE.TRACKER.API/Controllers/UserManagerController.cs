@@ -93,8 +93,7 @@ namespace FINANCE.TRACKER.API.Controllers
         {
             try
             {
-                var userId = int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
-                string fullname = User.FindFirst(ClaimTypes.Name)?.Value.ToString() ?? "";
+                int userId = int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
                 
                 if (userId == 0)
                 {
