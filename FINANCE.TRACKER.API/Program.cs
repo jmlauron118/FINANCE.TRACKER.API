@@ -1,8 +1,10 @@
 
 using FINANCE.TRACKER.API.Data;
 using FINANCE.TRACKER.API.Models.Auth;
+using FINANCE.TRACKER.API.Services.Implementations.Category;
 using FINANCE.TRACKER.API.Services.Implementations.Jwt;
 using FINANCE.TRACKER.API.Services.Implementations.UserManager;
+using FINANCE.TRACKER.API.Services.Interfaces.Category;
 using FINANCE.TRACKER.API.Services.Interfaces.Jwt;
 using FINANCE.TRACKER.API.Services.Interfaces.UserManager;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -32,6 +34,8 @@ namespace FINANCE.TRACKER.API
             builder.Services.AddScoped<IUserRoleService, UserRoleService>();
             builder.Services.AddScoped<IModuleActionService, ModuleActionService>();
             builder.Services.AddScoped<IModuleAccessService, ModuleAccessService>();
+            builder.Services.AddScoped<IBudgetCategoryService, BudgetCategoryService>();
+            builder.Services.AddScoped<IExpenseCategoryService, ExpenseCategoryService>();
 
             //JWT configuration
             JwtSecurityTokenHandler.DefaultMapInboundClaims = false;

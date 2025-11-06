@@ -18,7 +18,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
             _contextAccessor = contextAccessor;
         }
 
-        public async Task<IEnumerable<UserResponseDTO>> GellAllUsers(int status)
+        public async Task<IEnumerable<UserResponseDTO>> GetAllUsers(int status)
         {
             return await _context.Users
                 .Where(u => status == 2 || u.IsActive == status)

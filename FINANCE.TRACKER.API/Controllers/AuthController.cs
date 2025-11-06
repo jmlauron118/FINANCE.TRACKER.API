@@ -18,19 +18,16 @@ namespace FINANCE.TRACKER.API.Controllers
         private readonly AppDbContext _context;
         private readonly IJwtService _jwtService;
         private readonly JwtSettings _jwtSettings;
-        private readonly IUserService _userService;
 
         public AuthController(
             AppDbContext context, 
             IJwtService jwtService, 
-            IOptions<JwtSettings> jwtOptions,
-            IUserService userService
+            IOptions<JwtSettings> jwtOptions
         )
         {
             _context = context;
             _jwtService = jwtService;
             _jwtSettings = jwtOptions.Value;
-            _userService = userService;
         }
 
         public class LoginRequest
