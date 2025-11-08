@@ -1,7 +1,9 @@
 ﻿using FINANCE.TRACKER.API.Data;
+using FINANCE.TRACKER.API.Models.Auth;
 using FINANCE.TRACKER.API.Models.DTO.UserManager.UserDTO;
 using FINANCE.TRACKER.API.Models.UserManager;
 using FINANCE.TRACKER.API.Services.Interfaces.UserManager;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -142,6 +144,35 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
                 .ToList();
 
             return uniqueModules;
+        }
+
+        public async Task ChangePassword(ChangePasswordModel changePassword)
+        {
+            var userId = int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id)? id : 0;
+            var user = await _context.Users.FindAsync(userId);
+
+            if (user == null) throw new InvalidOperationException("User not found!");
+
+            var hasher = new PasswordHasher<UserModel>();
+            var result = hasher.VerifyHashedPassword(user, user.Password, changePassword.CurrentPassword);
+
+            if(result == PasswordVerificationResult.Failed)
+            {
+                throw new InvalidOperationException("Current password is incorrect!");
+            }
+
+            var isSame = hasher.VerifyHashedPassword(user, user.Password, changePassword.NewPassword);
+
+            if (isSame == PasswordVerificationResult.Success)
+            {
+                throw new InvalidOperationException("New password must be different from the current password.");
+            }
+
+            user.Password = hasher.HashPassword(user, changePassword.NewPassword);
+            user.UpdatedBy = userId;
+            user.DateUpdated = DateTime.Now;
+
+            await _context.SaveChangesAsync();
         }
     }
 }

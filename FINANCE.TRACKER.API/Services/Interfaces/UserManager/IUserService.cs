@@ -1,4 +1,5 @@
-﻿using FINANCE.TRACKER.API.Models.DTO.UserManager.UserDTO;
+﻿using FINANCE.TRACKER.API.Models.Auth;
+using FINANCE.TRACKER.API.Models.DTO.UserManager.UserDTO;
 
 namespace FINANCE.TRACKER.API.Services.Interfaces.UserManager
 {
@@ -9,5 +10,6 @@ namespace FINANCE.TRACKER.API.Services.Interfaces.UserManager
         Task<UserResponseDTO> AddUser(UserRequestDTO user);
         Task<UserResponseDTO> ModifyUser(UserModifyDTO user);
         Task<IEnumerable<UserModuleResponseDTO>> GetUserModules(int userId);
+        Task ChangePassword(ChangePasswordModel changePassword);
     }
 }

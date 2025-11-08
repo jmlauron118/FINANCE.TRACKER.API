@@ -1,4 +1,5 @@
 ﻿using FINANCE.TRACKER.API.Models;
+using FINANCE.TRACKER.API.Models.Auth;
 using FINANCE.TRACKER.API.Models.DTO.UserManager.ActionDTO;
 using FINANCE.TRACKER.API.Models.DTO.UserManager.ModuleAccessDTO;
 using FINANCE.TRACKER.API.Models.DTO.UserManager.ModuleActionDTO;
@@ -88,7 +89,6 @@ namespace FINANCE.TRACKER.API.Controllers
             }
         }
 
-        [Authorize]
         [HttpGet("get-user-modules")]
         public async Task<IActionResult> GetUserModules()
         {
@@ -116,7 +116,25 @@ namespace FINANCE.TRACKER.API.Controllers
             }
             catch(InvalidCastException ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordModel changePassword)
+        {
+            try
+            {
+                await _userService.ChangePassword(changePassword);
+
+                return Ok(new ResponseModel<object>
+                {
+                    Message = "Password changed successfully!"
+                });
+            }
+            catch(InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
         }
 

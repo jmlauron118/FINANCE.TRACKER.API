@@ -18,16 +18,19 @@ namespace FINANCE.TRACKER.API.Controllers
         private readonly AppDbContext _context;
         private readonly IJwtService _jwtService;
         private readonly JwtSettings _jwtSettings;
+        private readonly IUserService _userService;
 
         public AuthController(
             AppDbContext context, 
             IJwtService jwtService, 
-            IOptions<JwtSettings> jwtOptions
+            IOptions<JwtSettings> jwtOptions,
+            IUserService userService
         )
         {
             _context = context;
             _jwtService = jwtService;
             _jwtSettings = jwtOptions.Value;
+            _userService = userService;
         }
 
         public class LoginRequest
@@ -46,19 +49,20 @@ namespace FINANCE.TRACKER.API.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
 
             if (user == null)
-                return Unauthorized(new { message = "Invalid Credentials." });   
+                return Unauthorized(new { message = "Username/password is invalid!" });   
 
             var identityHasher = new PasswordHasher<UserModel>();
             var verification = identityHasher.VerifyHashedPassword(user, user.Password, request.Password);
 
             if (verification == PasswordVerificationResult.Failed)
-                return Unauthorized(new { message = "Invalid Credentials." });
+                return Unauthorized(new { message = "Username/password is invalid!" });
 
             var token = _jwtService.GenerateToken(user);
 
             return Ok(new { 
                 token,
-                tokenExp = _jwtSettings.ExpiresInMinutes
+                tokenExp = _jwtSettings.ExpiresInMinutes,
+                modules = await _userService.GetUserModules(user.UserId)
             });
         }
     }
