@@ -1,4 +1,5 @@
-﻿using FINANCE.TRACKER.API.Models.Category;
+﻿using FINANCE.TRACKER.API.Models.BudgetManager;
+using FINANCE.TRACKER.API.Models.Category;
 using FINANCE.TRACKER.API.Models.UserManager;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,5 +28,7 @@ namespace FINANCE.TRACKER.API.Data
         public DbSet<BudgetCategoryModel> BudgetCategories { get; set; }
 
         public DbSet<ExpensesCategoryModel> ExpensesCategories { get; set; }
+
+        public DbSet<BudgetManagerModel> BudgetManager { get; set; }
     }
 }
