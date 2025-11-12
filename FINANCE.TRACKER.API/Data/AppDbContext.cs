@@ -29,6 +29,6 @@ namespace FINANCE.TRACKER.API.Data
 
         public DbSet<ExpensesCategoryModel> ExpensesCategories { get; set; }
 
-        public DbSet<BudgetManagerModel> BudgetManager { get; set; }
+        public DbSet<BudgetEntryModel> BudgetEntries { get; set; }
     }
 }

@@ -1,11 +1,11 @@
-﻿namespace FINANCE.TRACKER.API.Models.DTO.BudgetManager
+﻿namespace FINANCE.TRACKER.API.Models.DTO.BudgetManager.BudgetEntry
 {
-    public class BudgetManagerResponseDTO
+    public class BudgetEntryResponseDTO
     {
-        public int BudgetManagerId { get; set; }
+        public int BudgetEntryId { get; set; }
         public int BudgetCategoryId { get; set; }
         public string? BudgetCategoryName { get; set; }
-        public int ExpenseCategoryId { get; set; }
+        public int? ExpenseCategoryId { get; set; }
         public string? ExpenseCategoryName { get; set; }
         public string? Description { get; set; }
         public decimal? Amount { get; set; }

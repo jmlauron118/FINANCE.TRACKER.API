@@ -38,7 +38,7 @@ namespace FINANCE.TRACKER.API
             builder.Services.AddScoped<IModuleAccessService, ModuleAccessService>();
             builder.Services.AddScoped<IBudgetCategoryService, BudgetCategoryService>();
             builder.Services.AddScoped<IExpenseCategoryService, ExpenseCategoryService>();
-            builder.Services.AddScoped<IBudgetManagerService, BudgetManagerService>();
+            builder.Services.AddScoped<IBudgetEntryService, BudgetEntryService>();
 
             //JWT configuration
             JwtSecurityTokenHandler.DefaultMapInboundClaims = false;

@@ -1,8 +1,10 @@
 ﻿using FINANCE.TRACKER.API.Models;
-using FINANCE.TRACKER.API.Models.DTO.BudgetManager;
+using FINANCE.TRACKER.API.Models.BudgetManager;
+using FINANCE.TRACKER.API.Models.DTO.BudgetManager.BudgetEntry;
 using FINANCE.TRACKER.API.Services.Interfaces.BudgetManager;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace FINANCE.TRACKER.API.Controllers
 {
@@ -11,27 +13,40 @@ namespace FINANCE.TRACKER.API.Controllers
     [Authorize]
     public class BudgetManagerController : Controller
     {
-        private readonly IBudgetManagerService _budgetManagerService;
+        private readonly IBudgetEntryService _budgetManagerService;
 
-        public BudgetManagerController(IBudgetManagerService budgetManagerService)
+        public BudgetManagerController(IBudgetEntryService budgetManagerService)
         {
             _budgetManagerService = budgetManagerService;
         }
 
-        [HttpGet("get-all-budget-entires")]
-        public async Task<IActionResult> GetAllBudgetEntires()
+        [HttpGet("get-budget-entires")]
+        public async Task<IActionResult> GetAllBudgetEntires([FromQuery] BudgetEntryParameters budgetEntryParameters)
         {
-            return Ok(new ResponseModel<IEnumerable<BudgetManagerResponseDTO>>
+            var budgetEntries = await _budgetManagerService.GetAllBudgetEntries(budgetEntryParameters);
+            var metadata = new
             {
-                Data = await _budgetManagerService.GetAllBudgetEntries(),
+                totalCount = budgetEntries.TotalCount,
+                pageSize = budgetEntries.PageSize,
+                currentPage = budgetEntries.CurrentPage,
+                totalPages = budgetEntries.TotalPages,
+                hasNext = budgetEntries.HasNext,
+                hasPrevious = budgetEntries.HasPrevious
+            };
+
+            Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(metadata));
+
+            return Ok(new ResponseModel<IEnumerable<BudgetEntryResponseDTO>>
+            {
+                Data = await _budgetManagerService.GetAllBudgetEntries(budgetEntryParameters),
                 Message = "All budget entries fetched successfully!"
             });
         }
 
         [HttpPost("add-budget-entry")]
-        public async Task<IActionResult> AddBudgetEntry([FromBody] BudgetManagerRequestDTO budgetRequest)
+        public async Task<IActionResult> AddBudgetEntry([FromBody] BudgetEntryRequestDTO budgetRequest)
         {
-            return Created(string.Empty, new ResponseModel<BudgetManagerResponseDTO>
+            return Created(string.Empty, new ResponseModel<BudgetEntryResponseDTO>
             {
                 Data = await _budgetManagerService.AddBudgetEntry(budgetRequest),
                 Message = "Budget entry added successfully!"
@@ -39,7 +54,7 @@ namespace FINANCE.TRACKER.API.Controllers
         }
 
         [HttpPost("add-budget-entry-bulk")]
-        public async Task<IActionResult> AddBudgetEntryBulk([FromBody] List<BudgetManagerRequestDTO> budgetRequestList)
+        public async Task<IActionResult> AddBudgetEntryBulk([FromBody] List<BudgetEntryRequestDTO> budgetRequestList)
         {
             try
             {
@@ -57,11 +72,11 @@ namespace FINANCE.TRACKER.API.Controllers
         }
 
         [HttpPut("modify-budget-entry")]
-        public async Task<IActionResult> ModifyBudgetEntry([FromBody] BudgetManagerModifyDTO budgetRequest)
+        public async Task<IActionResult> ModifyBudgetEntry([FromBody] BudgetEntryModifyDTO budgetRequest)
         {
             try
             {
-                return Ok(new ResponseModel<BudgetManagerResponseDTO>
+                return Ok(new ResponseModel<BudgetEntryResponseDTO>
                 {
                     Data = await _budgetManagerService.ModifyBudgetEntry(budgetRequest),
                     Message = "Budget entry modified successfully!"
@@ -74,7 +89,7 @@ namespace FINANCE.TRACKER.API.Controllers
         }
 
         [HttpDelete("delete-budget-entry")]
-        public async Task<IActionResult> RemoveBudgetEntry([FromBody] List<BudgetManagerDeleteDTO> idList)
+        public async Task<IActionResult> RemoveBudgetEntry([FromBody] List<BudgetEntryDeleteDTO> idList)
         {
             try
             {

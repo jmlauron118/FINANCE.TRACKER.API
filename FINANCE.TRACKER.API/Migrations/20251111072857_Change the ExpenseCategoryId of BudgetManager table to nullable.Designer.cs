@@ -4,6 +4,7 @@ using FINANCE.TRACKER.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FINANCE.TRACKER.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251111072857_Change the ExpenseCategoryId of BudgetManager table to nullable")]
+    partial class ChangetheExpenseCategoryIdofBudgetManagertabletonullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,13 +25,13 @@ namespace FINANCE.TRACKER.API.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("FINANCE.TRACKER.API.Models.BudgetManager.BudgetEntryModel", b =>
+            modelBuilder.Entity("FINANCE.TRACKER.API.Models.BudgetManager.BudgetManagerModel", b =>
                 {
-                    b.Property<int>("BudgetEntryId")
+                    b.Property<int>("BudgetManagerId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BudgetEntryId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BudgetManagerId"));
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
@@ -58,9 +61,9 @@ namespace FINANCE.TRACKER.API.Migrations
                     b.Property<int>("UpdatedBy")
                         .HasColumnType("int");
 
-                    b.HasKey("BudgetEntryId");
+                    b.HasKey("BudgetManagerId");
 
-                    b.ToTable("BudgetEntries");
+                    b.ToTable("BudgetManager");
                 });
 
             modelBuilder.Entity("FINANCE.TRACKER.API.Models.Category.BudgetCategoryModel", b =>

@@ -1,6 +1,6 @@
-﻿namespace FINANCE.TRACKER.API.Models.DTO.BudgetManager
+﻿namespace FINANCE.TRACKER.API.Models.DTO.BudgetManager.BudgetEntry
 {
-    public class BudgetManagerRequestDTO
+    public class BudgetEntryRequestDTO
     {
         public int BudgetCategoryId { get; set; }
         public int ExpenseCategoryId { get; set; }
