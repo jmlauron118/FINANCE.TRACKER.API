@@ -11,6 +11,7 @@ namespace FINANCE.TRACKER.API.Services.Interfaces.BudgetManager
         Task AddBudgetEntryBulk(List<BudgetEntryRequestDTO> budgetRequestList);
         Task<BudgetEntryResponseDTO> AddBudgetEntry(BudgetEntryRequestDTO budgetRequest);
         Task<BudgetEntryResponseDTO> ModifyBudgetEntry(BudgetEntryModifyDTO budgetRequest);
-        Task RemoveBudgetEntry(List<BudgetEntryDeleteDTO> idList);
+        Task RemoveBudgetEntry(int id);
+        Task RemoveBudgetEntryBulk(List<BudgetEntryDeleteDTO> idList);
     }
 }

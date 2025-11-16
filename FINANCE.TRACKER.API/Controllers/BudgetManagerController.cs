@@ -88,12 +88,30 @@ namespace FINANCE.TRACKER.API.Controllers
             }
         }
 
-        [HttpDelete("delete-budget-entry")]
-        public async Task<IActionResult> RemoveBudgetEntry([FromBody] List<BudgetEntryDeleteDTO> idList)
+        [HttpDelete("remove-budget-entry")]
+        public async Task<IActionResult> RemoveBudgetEntry(int id)
         {
             try
             {
-                await _budgetManagerService.RemoveBudgetEntry(idList);
+                await _budgetManagerService.RemoveBudgetEntry(id);
+
+                return Ok(new ResponseModel<object>
+                {
+                    Message = "Budget entry has been removed!"
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("remove-budget-entry-bulk")]
+        public async Task<IActionResult> RemoveBudgetEntryBulk([FromBody] List<BudgetEntryDeleteDTO> idList)
+        {
+            try
+            {
+                await _budgetManagerService.RemoveBudgetEntryBulk(idList);
 
                 return Ok(new ResponseModel<object>
                 {

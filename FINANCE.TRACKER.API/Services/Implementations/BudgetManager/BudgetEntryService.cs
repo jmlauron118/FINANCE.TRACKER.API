@@ -27,6 +27,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.BudgetManager
                                 join ec in _context.ExpensesCategories on bm.ExpenseCategoryId equals ec.ExpensesCategoryId into ecGroup
                                 from ec in ecGroup.DefaultIfEmpty()
                                 where string.IsNullOrEmpty(searchValue) || (bm.Description != null && bm.Description.ToLower().Contains(searchValue))
+                                orderby bm.DateUsed descending
                                 select new BudgetEntryResponseDTO
                                 {
                                     BudgetEntryId = bm.BudgetEntryId,
@@ -40,7 +41,8 @@ namespace FINANCE.TRACKER.API.Services.Implementations.BudgetManager
                                 };
 
             return await PagedList<BudgetEntryResponseDTO>.ToPagedListAsync(
-                budgetEntries.OrderBy(be => be.DateUsed),
+                budgetEntries.OrderByDescending(be => be.DateUsed).
+                ThenByDescending(be => be.BudgetEntryId),
                 budgetEntryParameters.PageNumber,
                 budgetEntryParameters.PageSize
             );
@@ -50,7 +52,8 @@ namespace FINANCE.TRACKER.API.Services.Implementations.BudgetManager
         {
             var budgetEntry = from bm in _context.BudgetEntries
                                 join bc in _context.BudgetCategories on bm.BudgetCagetoryId equals bc.BudgetCategoryId
-                                join ec in _context.ExpensesCategories on bm.ExpenseCategoryId equals ec.ExpensesCategoryId
+                                join ec in _context.ExpensesCategories on bm.ExpenseCategoryId equals ec.ExpensesCategoryId into ecGroup
+                                from ec in ecGroup.DefaultIfEmpty()
                                 where bm.BudgetEntryId == id
                                 orderby bm.DateUsed
                                 select new BudgetEntryResponseDTO
@@ -64,7 +67,6 @@ namespace FINANCE.TRACKER.API.Services.Implementations.BudgetManager
                                     Amount = bm.Amount,
                                     DateUsed = bm.DateUsed
                                 };
-
             var result = await budgetEntry.FirstOrDefaultAsync();
 
             if (result == null) throw new InvalidOperationException("No budget entry found!");
@@ -141,7 +143,17 @@ namespace FINANCE.TRACKER.API.Services.Implementations.BudgetManager
             return await GetBudgetEntryById(budgetEntryToUpdate.BudgetEntryId);
         }
 
-        public async Task RemoveBudgetEntry(List<BudgetEntryDeleteDTO> idList)
+        public async Task RemoveBudgetEntry(int id)
+        {
+            var budgetEntryToDelete = await _context.BudgetEntries.FindAsync(id);
+
+            if (budgetEntryToDelete == null) throw new InvalidOperationException("Budget entry not found!");
+
+            _context.BudgetEntries.Remove(budgetEntryToDelete);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task RemoveBudgetEntryBulk(List<BudgetEntryDeleteDTO> idList)
         {
             using var transaction = _context.Database.BeginTransaction();
 
