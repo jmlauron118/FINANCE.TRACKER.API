@@ -20,6 +20,8 @@ namespace FINANCE.TRACKER.API.Models.UserManager
         [Column(TypeName = "nvarchar(25)")]
         public string? Icon { get; set; }
 
+        public int ParentId { get; set; }
+
         public int SortOrder { get; set; }
 
         public int IsActive { get; set; }

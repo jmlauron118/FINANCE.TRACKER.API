@@ -8,6 +8,8 @@ namespace FINANCE.TRACKER.API.Services.Interfaces.UserManager
 
         Task<ModuleResponseDTO> GetModuleById(int id);
 
+        Task<IEnumerable<ModuleResponseDTO>> GetAllParentModules();
+
         Task<ModuleResponseDTO> AddModule(ModuleRequestDTO module);
 
         Task<ModuleResponseDTO> ModifyModule(ModuleModifyDTO module);

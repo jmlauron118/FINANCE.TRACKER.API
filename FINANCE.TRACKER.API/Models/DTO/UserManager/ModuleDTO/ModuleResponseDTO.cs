@@ -15,5 +15,8 @@
         public int SortOrder { get; set; }  
 
         public int IsActive { get; set; }
+
+        public int ParentId { get; set; }
+        public string? ParentModule { get; set; }
     }
 }

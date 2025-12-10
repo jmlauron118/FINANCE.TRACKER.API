@@ -243,6 +243,33 @@ namespace FINANCE.TRACKER.API.Controllers
             });
         }
 
+        [HttpGet("get-module-by-id")]
+        public async Task<IActionResult> GetModuleById(int id)
+        {
+            try
+            {
+                return Ok(new ResponseModel<ModuleResponseDTO>
+                {
+                    Data = await _moduleService.GetModuleById(id),
+                    Message = "Module fetched successfully!"
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("get-all-parent-modules")]
+        public async Task<IActionResult> GetAllParentModules()
+        {
+            return Ok(new ResponseModel<IEnumerable<ModuleResponseDTO>>
+            {
+                Data = await _moduleService.GetAllParentModules(),
+                Message = "Parent modules fetched successfully!"
+            });
+        }
+
         [HttpPost("add-module")]
         public async Task<IActionResult> AddModule([FromBody] ModuleRequestDTO module)
         {

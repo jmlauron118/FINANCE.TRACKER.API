@@ -20,5 +20,7 @@ namespace FINANCE.TRACKER.API.Models.DTO.UserManager.ModuleDTO
         public int SortOrder { get; set; }
 
         public int IsActive { get; set; }
+
+        public int ParentId { get; set; }
     }
 }

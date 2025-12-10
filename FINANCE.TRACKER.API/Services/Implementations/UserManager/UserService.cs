@@ -3,7 +3,6 @@ using FINANCE.TRACKER.API.Models.Auth;
 using FINANCE.TRACKER.API.Models.DTO.UserManager.UserDTO;
 using FINANCE.TRACKER.API.Models.UserManager;
 using FINANCE.TRACKER.API.Services.Interfaces.UserManager;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -126,24 +125,27 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
                                      join userRole in _context.UserRoles on moduleAccess.UserRoleId equals userRole.UserRoleId
                                      join user in _context.Users on userRole.UserId equals user.UserId
                                      join role in _context.Roles on userRole.RoleId equals role.RoleId
-                                     where module.IsActive == 1 && action.IsActive == 1 && user.IsActive == 1 && role.IsActive == 1 && user.UserId == userId
-                                     orderby module.SortOrder
+                                     join c in _context.Modules on module.ModuleId equals c.ParentId into childModules
+                                     where 
+                                        module.IsActive == 1 && 
+                                        action.IsActive == 1 && 
+                                        user.IsActive == 1 && 
+                                        role.IsActive == 1 && 
+                                        user.UserId == userId &&
+                                        action.ActionName == "CAN_VIEW"
+                                     orderby module.ParentId, module.SortOrder
                                      select new UserModuleResponseDTO
                                      {
                                          ModuleId = module.ModuleId,
                                          ModuleName = module.ModuleName,
                                          ModulePage = module.ModulePage,
                                          Icon = module.Icon,
-                                         SortNo = module.SortOrder
+                                         SortOrder = module.SortOrder,
+                                         ParentId = module.ParentId,
+                                         ChildCount = childModules.Count()
                                      }).ToListAsync();
 
-            var uniqueModules = userModules
-                .GroupBy(m => m.ModuleId)
-                .Select(g => g.First())
-                .OrderBy(m => m.SortNo)
-                .ToList();
-
-            return uniqueModules;
+            return SortModuleHierarchy(userModules);
         }
 
         public async Task ChangePassword(ChangePasswordModel changePassword)
@@ -173,6 +175,32 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
             user.DateUpdated = DateTime.Now;
 
             await _context.SaveChangesAsync();
+        }
+
+        private List<UserModuleResponseDTO> SortModuleHierarchy(List<UserModuleResponseDTO> modules)
+        {
+            var lookup = modules.GroupBy(m => m.ParentId)
+                                .ToDictionary(g => g.Key, g => g.OrderBy(m => m.SortOrder).ToList());
+
+            var result = new List<UserModuleResponseDTO>();
+
+            void AddModules(int parentId)
+            {
+                if(!lookup.ContainsKey(parentId))
+                {
+                    return;
+                }
+
+                foreach(var module in lookup[parentId])
+                {
+                    result.Add(module);
+                    AddModules(module.ModuleId);
+                }
+            }
+
+            AddModules(0);
+
+            return result;
         }
     }
 }

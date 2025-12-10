@@ -3,6 +3,7 @@ using FINANCE.TRACKER.API.Models.DTO.UserManager.ModuleDTO;
 using FINANCE.TRACKER.API.Models.UserManager;
 using FINANCE.TRACKER.API.Services.Interfaces.UserManager;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Security.Claims;
 
 namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
@@ -20,33 +21,48 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
 
         public async Task<IEnumerable<ModuleResponseDTO>> GetAllModules(int status)
         {
-            return await _context.Modules
-                .Where(m => status == 2 || m.IsActive == status)
-                .Select(m => new ModuleResponseDTO
-                {
-                    ModuleId = m.ModuleId,
-                    ModuleName = m.ModuleName,
-                    Description = m.Description,
-                    ModulePage = m.ModulePage,
-                    Icon = m.Icon,
-                    SortOrder = m.SortOrder,
-                    IsActive = m.IsActive
-                }).OrderBy(m => m.SortOrder).ToListAsync();
+            var allModules = await (from modules in _context.Modules
+                                    join parent in _context.Modules on modules.ParentId equals parent.ModuleId into parentModuleGroup
+                                    from parentModule in parentModuleGroup.DefaultIfEmpty()
+                                    where status == 2 || modules.IsActive == status
+                                    select new ModuleResponseDTO
+                                    {
+                                        ModuleId = modules.ModuleId,
+                                        ModuleName = modules.ModuleName,
+                                        Description = modules.Description,
+                                        ModulePage = modules.ModulePage,
+                                        Icon = modules.Icon,
+                                        SortOrder = modules.SortOrder,
+                                        IsActive = modules.IsActive,
+                                        ParentId = modules.ParentId,
+                                        ParentModule = parentModule != null ? parentModule.ModuleName : null
+                                    })
+                                    .OrderBy(m => m.ParentId)
+                                    .ThenBy(m => m.SortOrder)
+                                    .ToListAsync();
+
+            return allModules;
         }
 
         public async Task<ModuleResponseDTO> GetModuleById(int id)
         {
             var module = await _context.Modules
                 .Where(m => m.ModuleId == id)
-                .Select(m => new ModuleResponseDTO
+                .Join(_context.Modules,
+                    m => m.ParentId,
+                    p => p.ModuleId,
+                    (m,p) => new { m, p })
+                .Select(md => new ModuleResponseDTO
                 {
-                    ModuleId = m.ModuleId,
-                    ModuleName = m.ModuleName,
-                    Description = m.Description,
-                    ModulePage = m.ModulePage,
-                    Icon = m.Icon,
-                    SortOrder = m.SortOrder,
-                    IsActive = m.IsActive
+                    ModuleId = md.m.ModuleId,
+                    ModuleName = md.m.ModuleName,
+                    Description = md.m.Description,
+                    ModulePage = md.m.ModulePage,
+                    Icon = md.m.Icon,
+                    SortOrder = md.m.SortOrder,
+                    IsActive = md.m.IsActive,
+                    ParentId = md.m.ParentId,
+                    ParentModule = md.p.ModuleName
                 }).FirstOrDefaultAsync();
 
             if (module == null)
@@ -55,6 +71,21 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
             }
 
             return module;
+        }
+
+        public async Task<IEnumerable<ModuleResponseDTO>> GetAllParentModules()
+        {
+            return await _context.Modules
+                    .OrderBy(m => m.SortOrder)
+                    .Where(m => m.ParentId == 0 && m.IsActive == 1)
+                    .Select(m => new ModuleResponseDTO
+                    {
+                        ModuleId = m.ModuleId,
+                        ModuleName = m.ModuleName,
+                        Description = m.Description,
+                        ModulePage = m.ModulePage,
+                        Icon = m.Icon
+                    }).ToListAsync();
         }
 
         public async Task<ModuleResponseDTO> AddModule(ModuleRequestDTO module)
@@ -74,6 +105,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
                 Icon = module.Icon,
                 SortOrder = module.SortOrder,
                 IsActive = module.IsActive,
+                ParentId = module.ParentId,
                 CreatedBy = int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0,
                 DateCreated = DateTime.Now
             };
@@ -106,6 +138,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
             moduleToUpdate.Icon = module.Icon;
             moduleToUpdate.SortOrder = module.SortOrder;
             moduleToUpdate.IsActive = module.IsActive;
+            moduleToUpdate.ParentId = module.ParentId;
             moduleToUpdate.UpdatedBy = int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
             moduleToUpdate.DateUpdated = DateTime.Now;
 
