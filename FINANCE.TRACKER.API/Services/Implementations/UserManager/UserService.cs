@@ -13,10 +13,13 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
     {
         private readonly AppDbContext _context;
         private readonly IHttpContextAccessor _contextAccessor;
+        private readonly int _userId;
+
         public UserService(AppDbContext context, IHttpContextAccessor contextAccessor)
         {
             _context = context;
             _contextAccessor = contextAccessor;
+            _userId = (int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0);
         }
 
         public async Task<IEnumerable<UserResponseDTO>> GetAllUsers(int status)
@@ -77,7 +80,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
                 Username = user.Username,
                 Password = user.Password,
                 IsActive = user.IsActive,
-                CreatedBy = int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0,
+                CreatedBy = _userId,
                 DateCreated = DateTime.Now
             };
 
@@ -108,7 +111,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
             userToUpdate.Gender = user.Gender;
             userToUpdate.Username = user.Username;
             userToUpdate.IsActive = user.IsActive;
-            userToUpdate.UpdatedBy = int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
+            userToUpdate.UpdatedBy = _userId;
             userToUpdate.DateUpdated = DateTime.Now;
 
             await _context.SaveChangesAsync();

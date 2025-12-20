@@ -11,11 +11,13 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
     {
         private readonly AppDbContext _context;
         private readonly IHttpContextAccessor _contextAccessor;
+        private readonly int _userId;
 
         public UserRoleService(AppDbContext context, IHttpContextAccessor contextAccessor)
         {
             _context = context;
             _contextAccessor = contextAccessor;
+            _userId = (int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0);
         }
 
         public async Task<IEnumerable<UserRoleResponseDTO>> GetAllUserRoles()
@@ -75,7 +77,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
             {
                 UserId = userRole.UserId,
                 RoleId = userRole.RoleId,
-                CreatedBy = int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0,
+                CreatedBy = _userId,
                 DateCreated = DateTime.Now
             };
 
@@ -103,7 +105,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
 
             userRoleToUpdate.UserId = userRole.UserId;
             userRoleToUpdate.RoleId = userRole.RoleId;
-            userRoleToUpdate.UpdatedBy = int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
+            userRoleToUpdate.UpdatedBy = _userId;
             userRoleToUpdate.DateUpdated = DateTime.Now;
 
             await _context.SaveChangesAsync();

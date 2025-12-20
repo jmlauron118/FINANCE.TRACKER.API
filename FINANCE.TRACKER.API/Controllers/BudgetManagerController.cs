@@ -1,6 +1,7 @@
 ﻿using FINANCE.TRACKER.API.Models;
 using FINANCE.TRACKER.API.Models.BudgetManager;
 using FINANCE.TRACKER.API.Models.DTO.BudgetManager.BudgetEntry;
+using FINANCE.TRACKER.API.Models.DTO.BudgetManager.ExpensesBudget;
 using FINANCE.TRACKER.API.Services.Interfaces.BudgetManager;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,12 +15,16 @@ namespace FINANCE.TRACKER.API.Controllers
     public class BudgetManagerController : Controller
     {
         private readonly IBudgetEntryService _budgetManagerService;
+        private readonly IExpensesBudgetService _expensesBudgetService;
 
-        public BudgetManagerController(IBudgetEntryService budgetManagerService)
+        public BudgetManagerController(IBudgetEntryService budgetManagerService,
+            IExpensesBudgetService expensesBudgetService)
         {
             _budgetManagerService = budgetManagerService;
+            _expensesBudgetService = expensesBudgetService;
         }
 
+        #region Budget Entry
         [HttpGet("get-budget-entires")]
         public async Task<IActionResult> GetAllBudgetEntires([FromQuery] BudgetEntryParameters budgetEntryParameters)
         {
@@ -31,7 +36,11 @@ namespace FINANCE.TRACKER.API.Controllers
                 currentPage = budgetEntries.CurrentPage,
                 totalPages = budgetEntries.TotalPages,
                 hasNext = budgetEntries.HasNext,
-                hasPrevious = budgetEntries.HasPrevious
+                hasPrevious = budgetEntries.HasPrevious,
+                totalIncome = budgetEntries.TotalIncome,
+                totalSavings = budgetEntries.TotalSavings,
+                totalExpenses = budgetEntries.TotalExpenses,
+                totalBalance = budgetEntries.TotalBalance
             };
 
             Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(metadata));
@@ -123,5 +132,72 @@ namespace FINANCE.TRACKER.API.Controllers
                 return Problem(ex.Message);
             }
         }
+        #endregion Budget Entry
+
+        #region Expenses Budget
+        [HttpGet("get-expenses-budget-by-category")]
+        public async Task<IActionResult> GetExpensesBudgetByCategory(int categoryId)
+        {
+            return Ok(new ResponseModel<IEnumerable<ExpensesBudgetResponseDTO>>
+            {
+                Data = await _expensesBudgetService.GetExpensesBudgetByCategory(categoryId),
+                Message = "All expense budget fetched successfully!"
+            });
+        }
+
+        [HttpPost("add-expenses-budget-bulk")]
+        public async Task<IActionResult> AddExpensesBudgetBulk([FromBody] List<ExpenseBudgetRequestDTO> expenseBudgetRequests)
+        {
+            try
+            {
+                await _expensesBudgetService.AddExpensesBudgetBulk(expenseBudgetRequests);
+
+                return Created(string.Empty, new ResponseModel<object>
+                {
+                    Message = "Expenses budget added successfully!"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
+        [HttpPut("modify-expenses-budget-bulk")]
+        public async Task<IActionResult> ModifyExpensesBudgetBulk([FromBody] List<ExpensesBudgetModifyDTO> expenseBudgetRequests)
+        {
+            try
+            {
+                await _expensesBudgetService.ModifyExpensesBudgetBulk(expenseBudgetRequests);
+
+                return Ok(new ResponseModel<object>
+                {
+                    Message = "Expenses budget modified successfully!"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
+        [HttpDelete("remove-expenses-budget-bulk")]
+        public async Task<IActionResult> RemoveExpensesBudgetBulk([FromBody] List<ExpensesBudgetDeleteDTO> idList)
+        {
+            try
+            {
+                await _expensesBudgetService.RemoveExpensesBudgetBulk(idList);
+
+                return Ok(new ResponseModel<object>
+                {
+                    Message = "Expenses budget has been removed!"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+        #endregion Expenses Budget
     }
 }

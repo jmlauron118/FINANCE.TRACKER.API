@@ -11,10 +11,12 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Category
     {
         private readonly AppDbContext _context;
         private readonly IHttpContextAccessor _contextAccessor;
+        private readonly int _userId;
 
         public ExpenseCategoryService(AppDbContext context, IHttpContextAccessor contextAccessor) {
             _context = context;
             _contextAccessor = contextAccessor;
+            _userId = (int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0);
         }
 
         public async Task<IEnumerable<ExpenseCategoryResponseDTO>> GetAllExpenseCategories(int status)
@@ -58,7 +60,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Category
                 ExpensesCategoryName = expenseCategory.ExpenseCategoryName,
                 ExpensesCategoryDescription = expenseCategory.ExpenseCategoryDescription,
                 IsActive = expenseCategory.IsActive,
-                CreatedBy = int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0,
+                CreatedBy = _userId,
                 DateCreated = DateTime.Now
             };
 
@@ -87,7 +89,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Category
             expenseCategoryToUpdate.ExpensesCategoryName = expenseCategory.ExpenseCategoryName;
             expenseCategoryToUpdate.ExpensesCategoryDescription = expenseCategory.ExpenseCategoryDescription;
             expenseCategoryToUpdate.IsActive = expenseCategory.IsActive;
-            expenseCategoryToUpdate.UpdatedBy = int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
+            expenseCategoryToUpdate.UpdatedBy = _userId;
             expenseCategoryToUpdate.DateUpdated = DateTime.Now;
 
             await _context.SaveChangesAsync();

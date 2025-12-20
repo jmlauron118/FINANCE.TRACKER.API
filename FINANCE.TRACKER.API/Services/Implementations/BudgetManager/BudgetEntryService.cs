@@ -12,32 +12,38 @@ namespace FINANCE.TRACKER.API.Services.Implementations.BudgetManager
     {
         private readonly AppDbContext _context;
         private readonly IHttpContextAccessor _contextAccessor;
+        private readonly int _userId;
 
         public BudgetEntryService(AppDbContext context, IHttpContextAccessor contextAccessor) 
         {
             _context = context;
             _contextAccessor = contextAccessor;
+            _userId = (int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0);
         }
 
         public async Task<PagedList<BudgetEntryResponseDTO>> GetAllBudgetEntries(BudgetEntryParameters budgetEntryParameters)
         {
             var searchValue = budgetEntryParameters.Search?.Trim().ToLower();
-            var budgetEntries = from bm in _context.BudgetEntries
-                                join bc in _context.BudgetCategories on bm.BudgetCagetoryId equals bc.BudgetCategoryId
-                                join ec in _context.ExpensesCategories on bm.ExpenseCategoryId equals ec.ExpensesCategoryId into ecGroup
+            int userId = (int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0);
+            var budgetEntries = from be in _context.BudgetEntries
+                                join bc in _context.BudgetCategories on be.BudgetCagetoryId equals bc.BudgetCategoryId
+                                join ec in _context.ExpensesCategories on be.ExpenseCategoryId equals ec.ExpensesCategoryId into ecGroup
                                 from ec in ecGroup.DefaultIfEmpty()
-                                where string.IsNullOrEmpty(searchValue) || (bm.Description != null && bm.Description.ToLower().Contains(searchValue))
-                                orderby bm.DateUsed descending
+                                where (string.IsNullOrEmpty(searchValue) || (be.Description != null && be.Description.ToLower().Contains(searchValue))
+                                    || (bc.BudgetCategoryName != null && bc.BudgetCategoryName.ToLower().Contains(searchValue))
+                                    || (ec.ExpensesCategoryName != null && ec.ExpensesCategoryName.ToLower().Contains(searchValue)))
+                                    && be.CreatedBy == userId
+                                orderby be.DateUsed descending
                                 select new BudgetEntryResponseDTO
                                 {
-                                    BudgetEntryId = bm.BudgetEntryId,
+                                    BudgetEntryId = be.BudgetEntryId,
                                     BudgetCategoryId = bc.BudgetCategoryId,
                                     BudgetCategoryName = bc.BudgetCategoryName,
                                     ExpenseCategoryId = ec != null ? ec.ExpensesCategoryId : (int?)null,
                                     ExpenseCategoryName = ec != null ? ec.ExpensesCategoryName : null,
-                                    Description = bm.Description,
-                                    Amount = bm.Amount,
-                                    DateUsed = bm.DateUsed
+                                    Description = be.Description,
+                                    Amount = be.Amount,
+                                    DateUsed = be.DateUsed
                                 };
 
             return await PagedList<BudgetEntryResponseDTO>.ToPagedListAsync(
@@ -50,22 +56,23 @@ namespace FINANCE.TRACKER.API.Services.Implementations.BudgetManager
 
         public async Task<BudgetEntryResponseDTO> GetBudgetEntryById(int id)
         {
-            var budgetEntry = from bm in _context.BudgetEntries
-                                join bc in _context.BudgetCategories on bm.BudgetCagetoryId equals bc.BudgetCategoryId
-                                join ec in _context.ExpensesCategories on bm.ExpenseCategoryId equals ec.ExpensesCategoryId into ecGroup
+            int userId = (int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var uId) ? uId : 0);
+            var budgetEntry = from be in _context.BudgetEntries
+                                join bc in _context.BudgetCategories on be.BudgetCagetoryId equals bc.BudgetCategoryId
+                                join ec in _context.ExpensesCategories on be.ExpenseCategoryId equals ec.ExpensesCategoryId into ecGroup
                                 from ec in ecGroup.DefaultIfEmpty()
-                                where bm.BudgetEntryId == id
-                                orderby bm.DateUsed
+                                where be.BudgetEntryId == id && be.CreatedBy == userId
+                              orderby be.DateUsed
                                 select new BudgetEntryResponseDTO
                                 {
-                                    BudgetEntryId = bm.BudgetEntryId,
+                                    BudgetEntryId = be.BudgetEntryId,
                                     BudgetCategoryId = bc.BudgetCategoryId,
                                     BudgetCategoryName = bc.BudgetCategoryName,
                                     ExpenseCategoryId = ec.ExpensesCategoryId,
                                     ExpenseCategoryName = ec.ExpensesCategoryName,
-                                    Description = bm.Description,
-                                    Amount = bm.Amount,
-                                    DateUsed = bm.DateUsed
+                                    Description = be.Description,
+                                    Amount = be.Amount,
+                                    DateUsed = be.DateUsed
                                 };
             var result = await budgetEntry.FirstOrDefaultAsync();
 
@@ -83,7 +90,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.BudgetManager
                 Description = budgetRequest.Description,
                 Amount = budgetRequest.Amount,
                 DateUsed = budgetRequest.DateUsed,
-                CreatedBy = int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0,
+                CreatedBy = _userId,
                 DateCreated = DateTime.Now
             };
 
@@ -106,7 +113,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.BudgetManager
                     Description = dto.Description,
                     Amount = dto.Amount,
                     DateUsed = dto.DateUsed,
-                    CreatedBy = int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0,
+                    CreatedBy = _userId,
                     DateCreated = DateTime.Now
                 }).ToList();
 
@@ -135,7 +142,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.BudgetManager
             budgetEntryToUpdate.Description = budgetRequest.Description;
             budgetEntryToUpdate.Amount = budgetRequest.Amount;
             budgetEntryToUpdate.DateUsed = budgetRequest.DateUsed;
-            budgetEntryToUpdate.UpdatedBy = int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
+            budgetEntryToUpdate.UpdatedBy = _userId;
             budgetEntryToUpdate.DateUpdated = DateTime.Now;
 
             await _context.SaveChangesAsync();
@@ -164,12 +171,11 @@ namespace FINANCE.TRACKER.API.Services.Implementations.BudgetManager
                                             .Where(bm => ids.Contains(bm.BudgetEntryId))
                                             .ToListAsync();
 
-                if (entriesToDelete.Any())
-                {
-                    _context.BudgetEntries.RemoveRange(entriesToDelete);
-                    await _context.SaveChangesAsync();
-                    await transaction.CommitAsync();
-                }
+                if (!entriesToDelete.Any()) throw new InvalidOperationException("No budget entries found to delete!");
+
+                _context.BudgetEntries.RemoveRange(entriesToDelete);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
             }
             catch (Exception ex)
             {

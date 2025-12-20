@@ -11,11 +11,13 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
     {
         private readonly AppDbContext _context;
         private readonly IHttpContextAccessor _contextAccessor;
+        private readonly int _userId;
 
         public ModuleAccessService(AppDbContext context, IHttpContextAccessor contextAccessor)
         {
             _context = context;
             _contextAccessor = contextAccessor;
+            _userId = (int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0);
         }
 
         public async Task<IEnumerable<ModuleAccessResponseDTO>> GetAllModuleAccess()
@@ -86,7 +88,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
             {
                 ModuleActionId = moduleAcess.ModuleActionId,
                 UserRoleId = moduleAcess.UserRoleId,
-                CreatedBy = int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0,
+                CreatedBy = _userId,
                 DateCreated = DateTime.Now
             };
 
@@ -115,7 +117,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
 
             moduleAccessToUpdate.ModuleActionId = moduleAccess.ModuleActionId;
             moduleAccessToUpdate.UserRoleId = moduleAccess.UserRoleId;
-            moduleAccessToUpdate.UpdatedBy = int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
+            moduleAccessToUpdate.UpdatedBy = _userId;
             moduleAccessToUpdate.DateUpdated = DateTime.Now;
 
             await _context.SaveChangesAsync();

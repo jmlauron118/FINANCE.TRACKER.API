@@ -11,11 +11,13 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Category
     {
         private readonly AppDbContext _context;
         private readonly IHttpContextAccessor _contextAccessor;
+        private readonly int _userId;
 
         public BudgetCategoryService(AppDbContext context, IHttpContextAccessor contextAccessor)
         {
             _context = context;
             _contextAccessor = contextAccessor;
+            _userId = (int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0);
         }
 
         public async Task<IEnumerable<BudgetCategoryResponseDTO>> GetAllBudgetCategories(int status)
@@ -59,7 +61,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Category
                 BudgetCategoryName = budgetCategory.BudgetCategoryName,
                 BudgetCategoryDescription = budgetCategory.BudgetCategoryDescription,
                 IsActive = budgetCategory.IsActive,
-                CreatedBy = int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0,
+                CreatedBy = _userId,
                 DateCreated = DateTime.Now
             };
 
@@ -85,7 +87,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Category
             budgetCategoryToUpdate.BudgetCategoryName = budgetCategory.BudgetCategoryName;
             budgetCategoryToUpdate.BudgetCategoryDescription = budgetCategory.BudgetCategoryDescription;
             budgetCategoryToUpdate.IsActive = budgetCategory.IsActive;
-            budgetCategoryToUpdate.UpdatedBy = int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
+            budgetCategoryToUpdate.UpdatedBy = _userId;
             budgetCategoryToUpdate.DateUpdated = DateTime.Now;
 
             await _context.SaveChangesAsync();
