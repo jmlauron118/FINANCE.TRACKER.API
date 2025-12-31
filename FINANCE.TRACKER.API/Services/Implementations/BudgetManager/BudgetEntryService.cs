@@ -24,7 +24,10 @@ namespace FINANCE.TRACKER.API.Services.Implementations.BudgetManager
         public async Task<PagedList<BudgetEntryResponseDTO>> GetAllBudgetEntries(BudgetEntryParameters budgetEntryParameters)
         {
             var searchValue = budgetEntryParameters.Search?.Trim().ToLower();
-            int userId = (int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0);
+            var now = DateTime.Now;
+            var startOfMonth = new DateTime(now.Year, now.Month, 1);
+            var startOfNextMonth = startOfMonth.AddMonths(1);
+
             var budgetEntries = from be in _context.BudgetEntries
                                 join bc in _context.BudgetCategories on be.BudgetCagetoryId equals bc.BudgetCategoryId
                                 join ec in _context.ExpensesCategories on be.ExpenseCategoryId equals ec.ExpensesCategoryId into ecGroup
@@ -32,7 +35,8 @@ namespace FINANCE.TRACKER.API.Services.Implementations.BudgetManager
                                 where (string.IsNullOrEmpty(searchValue) || (be.Description != null && be.Description.ToLower().Contains(searchValue))
                                     || (bc.BudgetCategoryName != null && bc.BudgetCategoryName.ToLower().Contains(searchValue))
                                     || (ec.ExpensesCategoryName != null && ec.ExpensesCategoryName.ToLower().Contains(searchValue)))
-                                    && be.CreatedBy == userId
+                                    && be.CreatedBy == _userId
+                                    && (budgetEntryParameters.Sorted || be.DateUsed >= startOfMonth && be.DateUsed < startOfNextMonth)
                                 orderby be.DateUsed descending
                                 select new BudgetEntryResponseDTO
                                 {
@@ -56,13 +60,15 @@ namespace FINANCE.TRACKER.API.Services.Implementations.BudgetManager
 
         public async Task<BudgetEntryResponseDTO> GetBudgetEntryById(int id)
         {
-            int userId = (int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var uId) ? uId : 0);
+            var now = DateTime.Now;
+            var startOfMonth = new DateTime(now.Year, now.Month, 1);
+            var startOfNextMonth = startOfMonth.AddMonths(1);
             var budgetEntry = from be in _context.BudgetEntries
                                 join bc in _context.BudgetCategories on be.BudgetCagetoryId equals bc.BudgetCategoryId
                                 join ec in _context.ExpensesCategories on be.ExpenseCategoryId equals ec.ExpensesCategoryId into ecGroup
                                 from ec in ecGroup.DefaultIfEmpty()
-                                where be.BudgetEntryId == id && be.CreatedBy == userId
-                              orderby be.DateUsed
+                                where be.BudgetEntryId == id && be.CreatedBy == _userId 
+                                orderby be.DateUsed
                                 select new BudgetEntryResponseDTO
                                 {
                                     BudgetEntryId = be.BudgetEntryId,

@@ -146,51 +146,15 @@ namespace FINANCE.TRACKER.API.Controllers
         }
 
         [HttpPost("add-expenses-budget-bulk")]
-        public async Task<IActionResult> AddExpensesBudgetBulk([FromBody] List<ExpenseBudgetRequestDTO> expenseBudgetRequests)
+        public async Task<IActionResult> AddExpensesBudgetBulk([FromBody] List<ExpenseBudgetRequestDTO> expenseBudgetRequests, int categoryId)
         {
             try
             {
-                await _expensesBudgetService.AddExpensesBudgetBulk(expenseBudgetRequests);
+                await _expensesBudgetService.AddExpensesBudgetBulk(expenseBudgetRequests, categoryId);
 
                 return Created(string.Empty, new ResponseModel<object>
                 {
-                    Message = "Expenses budget added successfully!"
-                });
-            }
-            catch (Exception ex)
-            {
-                return Problem(ex.Message);
-            }
-        }
-
-        [HttpPut("modify-expenses-budget-bulk")]
-        public async Task<IActionResult> ModifyExpensesBudgetBulk([FromBody] List<ExpensesBudgetModifyDTO> expenseBudgetRequests)
-        {
-            try
-            {
-                await _expensesBudgetService.ModifyExpensesBudgetBulk(expenseBudgetRequests);
-
-                return Ok(new ResponseModel<object>
-                {
-                    Message = "Expenses budget modified successfully!"
-                });
-            }
-            catch (Exception ex)
-            {
-                return Problem(ex.Message);
-            }
-        }
-
-        [HttpDelete("remove-expenses-budget-bulk")]
-        public async Task<IActionResult> RemoveExpensesBudgetBulk([FromBody] List<ExpensesBudgetDeleteDTO> idList)
-        {
-            try
-            {
-                await _expensesBudgetService.RemoveExpensesBudgetBulk(idList);
-
-                return Ok(new ResponseModel<object>
-                {
-                    Message = "Expenses budget has been removed!"
+                    Message = GetMessage(categoryId)
                 });
             }
             catch (Exception ex)
@@ -199,5 +163,14 @@ namespace FINANCE.TRACKER.API.Controllers
             }
         }
         #endregion Expenses Budget
+
+        private string GetMessage(int category) =>
+            category switch
+            {
+                1 => "Budgeted expenses successfully updated!",
+                2 => "Unbudgeted expenses (Monthly) successfully updated!",
+                3 => "Unbudgeted expenses (Payroll) successfully updated!",
+                _ => "Expenses budget successfully updated!"
+            };
     }
 }

@@ -13,5 +13,6 @@
         }
 
         public string? Search { get; set; } = null;
+        public bool Sorted { get; set; } = true;
     }
 }

@@ -22,7 +22,6 @@ namespace FINANCE.TRACKER.API.Services.Implementations.BudgetManager
             _userId = (int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0);
         }
 
-        #region Expenses Budget
         public async Task<IEnumerable<ExpensesBudgetResponseDTO>> GetExpensesBudgetByCategory(int categoryId)
         {
             return await _context.ExpensesBudget
@@ -47,25 +46,35 @@ namespace FINANCE.TRACKER.API.Services.Implementations.BudgetManager
                 }).ToListAsync();
         }
 
-        public async Task AddExpensesBudgetBulk(List<ExpenseBudgetRequestDTO> ExpensesBudgetRequest)
+        public async Task AddExpensesBudgetBulk(List<ExpenseBudgetRequestDTO> expensesBudgetRequest, int categoryId)
         {
+            if (categoryId <= 0) throw new ArgumentException("categoryId must be a positive integer.", nameof(categoryId));
+
             using var transaction = await _context.Database.BeginTransactionAsync();
 
+            var originalAutoDetect = _context.ChangeTracker.AutoDetectChangesEnabled;
             try
             {
-                var newBudgetExpenses = ExpensesBudgetRequest.Select(eb => new ExpensesBudgetModel
-                {
-                    ExpensesBudgetCategoryId = eb.ExpensesBudgetCategoryId,
-                    Description = eb.Description,
-                    Amount = eb.Amount,
-                    CreatedBy = _userId,
-                    DateCreated = DateTime.Now
-                }).ToList();
+                await _context.ExpensesBudget
+                    .Where(eb => eb.ExpensesBudgetCategoryId == categoryId && eb.CreatedBy == _userId)
+                    .ExecuteDeleteAsync();
 
-                _context.ChangeTracker.AutoDetectChangesEnabled = false;
-                await _context.ExpensesBudget.AddRangeAsync(newBudgetExpenses);
-                await _context.SaveChangesAsync();
-                _context.ChangeTracker.AutoDetectChangesEnabled = true;
+                if (expensesBudgetRequest != null && expensesBudgetRequest.Any())
+                {
+                    var now = DateTime.Now;
+                    var newBudgetExpenses = expensesBudgetRequest.Select(eb => new ExpensesBudgetModel
+                    {
+                        ExpensesBudgetCategoryId = categoryId,
+                        Description = eb.Description,
+                        Amount = eb.Amount,
+                        CreatedBy = _userId,
+                        DateCreated = now
+                    }).ToList();
+
+                    _context.ChangeTracker.AutoDetectChangesEnabled = false;
+                    await _context.ExpensesBudget.AddRangeAsync(newBudgetExpenses);
+                    await _context.SaveChangesAsync();
+                }
 
                 await transaction.CommitAsync();
             }
@@ -74,64 +83,10 @@ namespace FINANCE.TRACKER.API.Services.Implementations.BudgetManager
                 await transaction.RollbackAsync();
                 throw new ApplicationException("Bulk saving of expenses budget failed! Error: ", ex);
             }
-        }
-
-        public async Task ModifyExpensesBudgetBulk(List<ExpensesBudgetModifyDTO> ExpensesBudgetRequest)
-        {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-
-            try
-            { 
-                var budgetExpensesToUpdate = _context.ExpensesBudget
-                    .Where(eb => ExpensesBudgetRequest.Select(b => b.Id).Contains(eb.Id) && eb.CreatedBy == _userId)
-                    .ToList();
-
-                foreach (var expense in budgetExpensesToUpdate)
-                {
-                    var updatedData = ExpensesBudgetRequest.First(b => b.Id == expense.Id);
-
-                    expense.ExpensesBudgetCategoryId = updatedData.ExpensesBudgetCategoryId;
-                    expense.Description = updatedData.Description;
-                    expense.Amount = updatedData.Amount;
-                    expense.UpdatedBy = _userId;
-                    expense.DateUpdated = DateTime.Now;
-                }
-
-                _context.ExpensesBudget.UpdateRange(budgetExpensesToUpdate);
-                await _context.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-            }
-            catch (Exception ex)
+            finally
             {
-                await transaction.RollbackAsync();
-                throw new ApplicationException("Bulk modification of expenses budget failed! Error: ", ex);
+                _context.ChangeTracker.AutoDetectChangesEnabled = originalAutoDetect;
             }
         }
-
-        public async Task RemoveExpensesBudgetBulk(List<ExpensesBudgetDeleteDTO> idList)
-        {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-
-            try
-            {
-                var budgetExpensesToDelete = await _context.ExpensesBudget
-                    .Where(eb => idList.Select(b => b.Id).Contains(eb.Id) && eb.CreatedBy == _userId)
-                    .ToListAsync();
-
-                if (!budgetExpensesToDelete.Any()) throw new InvalidOperationException("No expenses budget found to delete!");
-
-                _context.ExpensesBudget.RemoveRange(budgetExpensesToDelete);
-                await _context.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                throw new ApplicationException("Bulk deletion of expenses budget failed! Error: ", ex);
-            }
-        }
-        #endregion Expenses Budget
     }
 }
