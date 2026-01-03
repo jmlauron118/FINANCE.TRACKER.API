@@ -53,6 +53,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.BudgetManager
             using var transaction = await _context.Database.BeginTransactionAsync();
 
             var originalAutoDetect = _context.ChangeTracker.AutoDetectChangesEnabled;
+
             try
             {
                 await _context.ExpensesBudget

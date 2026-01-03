@@ -1,6 +1,7 @@
 ﻿using FINANCE.TRACKER.API.Data;
 using FINANCE.TRACKER.API.Models.BudgetManager;
 using FINANCE.TRACKER.API.Models.DTO.BudgetManager.BudgetEntry;
+using FINANCE.TRACKER.API.Models.DTO.BudgetManager.ExpensesBudget;
 using FINANCE.TRACKER.API.Repositories;
 using FINANCE.TRACKER.API.Services.Interfaces.BudgetManager;
 using Microsoft.EntityFrameworkCore;
@@ -106,12 +107,33 @@ namespace FINANCE.TRACKER.API.Services.Implementations.BudgetManager
             return await GetBudgetEntryById(newBudgetEntry.BudgetEntryId);
         }
 
-        public async Task AddBudgetEntryBulk(List<BudgetEntryRequestDTO> budgetRequestList)
+        public async Task SyncBudgetEntries(List<BudgetEntryRequestDTO> budgetRequestList)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
+                var unbudgetedExpenses = await _context.ExpensesBudget.Where(eb => eb.ExpensesBudgetCategoryId == 3 && eb.CreatedBy == _userId).ToListAsync();
+
+                if(unbudgetedExpenses == null)
+                {
+                    throw new Exception();
+                }
+
+                var newBudgetedExpenses = unbudgetedExpenses.Select(ue => new ExpensesBudgetModel
+                {
+                    ExpensesBudgetCategoryId = 1,
+                    Description = ue.Description,
+                    Amount = ue.Amount,
+                    CreatedBy= _userId,
+                    DateCreated = DateTime.Now
+                }).ToList();
+
+                await _context.ExpensesBudget.AddRangeAsync(newBudgetedExpenses);
+                await _context.ExpensesBudget
+                    .Where(eb => eb.ExpensesBudgetCategoryId == 3 && eb.CreatedBy == _userId)
+                    .ExecuteDeleteAsync();
+
                 var entries = budgetRequestList.Select(dto => new BudgetEntryModel
                 {
                     BudgetCagetoryId = dto.BudgetCategoryId,

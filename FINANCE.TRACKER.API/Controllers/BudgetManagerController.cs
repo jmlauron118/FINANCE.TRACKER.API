@@ -62,16 +62,16 @@ namespace FINANCE.TRACKER.API.Controllers
             });
         }
 
-        [HttpPost("add-budget-entry-bulk")]
-        public async Task<IActionResult> AddBudgetEntryBulk([FromBody] List<BudgetEntryRequestDTO> budgetRequestList)
+        [HttpPost("sync-budget-entries")]
+        public async Task<IActionResult> SyncBudgetEntries([FromBody] List<BudgetEntryRequestDTO> budgetRequestList)
         {
             try
             {
-                await _budgetManagerService.AddBudgetEntryBulk(budgetRequestList);
+                await _budgetManagerService.SyncBudgetEntries(budgetRequestList);
 
                 return Created(string.Empty, new ResponseModel<object>
                 {
-                    Message = "Budget entries added successfully!"
+                    Message = "Unbudgeted expenses successfully synced!"
                 });
             }
             catch(Exception ex)

@@ -8,7 +8,7 @@ namespace FINANCE.TRACKER.API.Services.Interfaces.BudgetManager
     {
         Task<PagedList<BudgetEntryResponseDTO>> GetAllBudgetEntries(BudgetEntryParameters budgetEntryParameters);
         Task<BudgetEntryResponseDTO> GetBudgetEntryById(int id);
-        Task AddBudgetEntryBulk(List<BudgetEntryRequestDTO> budgetRequestList);
+        Task SyncBudgetEntries(List<BudgetEntryRequestDTO> budgetRequestList);
         Task<BudgetEntryResponseDTO> AddBudgetEntry(BudgetEntryRequestDTO budgetRequest);
         Task<BudgetEntryResponseDTO> ModifyBudgetEntry(BudgetEntryModifyDTO budgetRequest);
         Task RemoveBudgetEntry(int id);
