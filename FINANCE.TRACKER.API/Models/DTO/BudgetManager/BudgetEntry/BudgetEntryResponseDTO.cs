@@ -4,7 +4,7 @@
     {
         public int BudgetEntryId { get; set; }
         public int BudgetCategoryId { get; set; }
-        public string? BudgetCategoryName { get; set; }
+        public string BudgetCategoryName { get; set; }
         public int? ExpenseCategoryId { get; set; }
         public string? ExpenseCategoryName { get; set; }
         public string? Description { get; set; }

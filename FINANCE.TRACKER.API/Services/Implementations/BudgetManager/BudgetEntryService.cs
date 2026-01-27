@@ -1,7 +1,6 @@
 ﻿using FINANCE.TRACKER.API.Data;
 using FINANCE.TRACKER.API.Models.BudgetManager;
 using FINANCE.TRACKER.API.Models.DTO.BudgetManager.BudgetEntry;
-using FINANCE.TRACKER.API.Models.DTO.BudgetManager.ExpensesBudget;
 using FINANCE.TRACKER.API.Repositories;
 using FINANCE.TRACKER.API.Services.Interfaces.BudgetManager;
 using Microsoft.EntityFrameworkCore;

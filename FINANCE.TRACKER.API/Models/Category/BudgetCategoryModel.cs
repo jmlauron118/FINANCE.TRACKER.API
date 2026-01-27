@@ -9,10 +9,10 @@ namespace FINANCE.TRACKER.API.Models.Category
         public int BudgetCategoryId { get; set; }
 
         [Column(TypeName = "nvarchar(50)")]
-        public string? BudgetCategoryName { get; set; }
+        public string BudgetCategoryName { get; set; }
 
         [Column(TypeName = "nvarchar(150)")]
-        public string? BudgetCategoryDescription { get; set; }
+        public string BudgetCategoryDescription { get; set; }
 
         public int IsActive { get; set; }
         public int CreatedBy { get; set; }

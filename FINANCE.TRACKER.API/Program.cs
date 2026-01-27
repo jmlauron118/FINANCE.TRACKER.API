@@ -3,10 +3,12 @@ using FINANCE.TRACKER.API.Data;
 using FINANCE.TRACKER.API.Models.Auth;
 using FINANCE.TRACKER.API.Services.Implementations.BudgetManager;
 using FINANCE.TRACKER.API.Services.Implementations.Category;
+using FINANCE.TRACKER.API.Services.Implementations.Dashboard;
 using FINANCE.TRACKER.API.Services.Implementations.Jwt;
 using FINANCE.TRACKER.API.Services.Implementations.UserManager;
 using FINANCE.TRACKER.API.Services.Interfaces.BudgetManager;
 using FINANCE.TRACKER.API.Services.Interfaces.Category;
+using FINANCE.TRACKER.API.Services.Interfaces.Dashboard;
 using FINANCE.TRACKER.API.Services.Interfaces.Jwt;
 using FINANCE.TRACKER.API.Services.Interfaces.UserManager;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -25,7 +27,7 @@ namespace FINANCE.TRACKER.API
 
             builder.Services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("AppConnection"));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DevAppConnection"));
             });
 
             // Add services to the container.
@@ -40,6 +42,7 @@ namespace FINANCE.TRACKER.API
             builder.Services.AddScoped<IExpenseCategoryService, ExpenseCategoryService>();
             builder.Services.AddScoped<IBudgetEntryService, BudgetEntryService>();
             builder.Services.AddScoped<IExpensesBudgetService, ExpensesBudgetService>();
+            builder.Services.AddScoped<IDashboardService, DashboardService>();
 
             //JWT configuration
             JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
