@@ -1,16 +1,8 @@
 
 using FINANCE.TRACKER.API.Data;
 using FINANCE.TRACKER.API.Models.Auth;
-using FINANCE.TRACKER.API.Services.Implementations.BudgetManager;
-using FINANCE.TRACKER.API.Services.Implementations.Category;
-using FINANCE.TRACKER.API.Services.Implementations.Dashboard;
 using FINANCE.TRACKER.API.Services.Implementations.Jwt;
-using FINANCE.TRACKER.API.Services.Implementations.UserManager;
-using FINANCE.TRACKER.API.Services.Interfaces.BudgetManager;
-using FINANCE.TRACKER.API.Services.Interfaces.Category;
-using FINANCE.TRACKER.API.Services.Interfaces.Dashboard;
 using FINANCE.TRACKER.API.Services.Interfaces.Jwt;
-using FINANCE.TRACKER.API.Services.Interfaces.UserManager;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -30,19 +22,11 @@ namespace FINANCE.TRACKER.API
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DevAppConnection"));
             });
 
-            // Add services to the container.
-            builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddScoped<IRoleService, RoleService>();
-            builder.Services.AddScoped<IActionService, ActionService>();
-            builder.Services.AddScoped<IModuleService, ModuleService>();
-            builder.Services.AddScoped<IUserRoleService, UserRoleService>();
-            builder.Services.AddScoped<IModuleActionService, ModuleActionService>();
-            builder.Services.AddScoped<IModuleAccessService, ModuleAccessService>();
-            builder.Services.AddScoped<IBudgetCategoryService, BudgetCategoryService>();
-            builder.Services.AddScoped<IExpenseCategoryService, ExpenseCategoryService>();
-            builder.Services.AddScoped<IBudgetEntryService, BudgetEntryService>();
-            builder.Services.AddScoped<IExpensesBudgetService, ExpensesBudgetService>();
-            builder.Services.AddScoped<IDashboardService, DashboardService>();
+            builder.Services.Scan(scan => scan
+                .FromAssemblyOf<Program>()
+                .AddClasses(classes => classes.InNamespaces("FINANCE.TRACKER.API.Services"))
+                .AsImplementedInterfaces()
+                .WithScopedLifetime());
 
             //JWT configuration
             JwtSecurityTokenHandler.DefaultMapInboundClaims = false;

@@ -49,22 +49,28 @@ namespace FINANCE.TRACKER.API.Services.Implementations.UserManager
         {
             var module = await _context.Modules
                 .Where(m => m.ModuleId == id)
-                .Join(_context.Modules,
+                .GroupJoin(
+                    _context.Modules,
                     m => m.ParentId,
                     p => p.ModuleId,
-                    (m,p) => new { m, p })
-                .Select(md => new ModuleResponseDTO
-                {
-                    ModuleId = md.m.ModuleId,
-                    ModuleName = md.m.ModuleName,
-                    Description = md.m.Description,
-                    ModulePage = md.m.ModulePage,
-                    Icon = md.m.Icon,
-                    SortOrder = md.m.SortOrder,
-                    IsActive = md.m.IsActive,
-                    ParentId = md.m.ParentId,
-                    ParentModule = md.p.ModuleName
-                }).FirstOrDefaultAsync();
+                    (m, parents) => new { m, parents }
+                )
+                .SelectMany(
+                    x => x.parents.DefaultIfEmpty(),
+                    (x, p) => new ModuleResponseDTO
+                    {
+                        ModuleId = x.m.ModuleId,
+                        ModuleName = x.m.ModuleName,
+                        Description = x.m.Description,
+                        ModulePage = x.m.ModulePage,
+                        Icon = x.m.Icon,
+                        SortOrder = x.m.SortOrder,
+                        IsActive = x.m.IsActive,
+                        ParentId = x.m.ParentId,
+                        ParentModule = x.m.ParentId == 0 ? null : p.ModuleName
+                    }
+                )
+                .FirstOrDefaultAsync();
 
             if (module == null)
             {

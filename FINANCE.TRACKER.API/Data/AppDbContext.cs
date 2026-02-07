@@ -1,5 +1,6 @@
 ﻿using FINANCE.TRACKER.API.Models.BudgetManager;
 using FINANCE.TRACKER.API.Models.Category;
+using FINANCE.TRACKER.API.Models.Savings;
 using FINANCE.TRACKER.API.Models.UserManager;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +12,7 @@ namespace FINANCE.TRACKER.API.Data
         {
         }
 
+        #region User Manager
         public DbSet<UserModel> Users { get; set; }
 
         public DbSet<ActionModel> Actions { get; set; }
@@ -24,7 +26,9 @@ namespace FINANCE.TRACKER.API.Data
         public DbSet<ModuleActionModel> ModuleActions { get; set; }
 
         public DbSet<ModuleAccessModel> ModuleAccesses { get; set; }
+        #endregion User Manager
 
+        #region Budget Manager
         public DbSet<BudgetCategoryModel> BudgetCategories { get; set; }
 
         public DbSet<ExpensesCategoryModel> ExpensesCategories { get; set; }
@@ -34,5 +38,16 @@ namespace FINANCE.TRACKER.API.Data
         public DbSet<ExpensesBudgetModel> ExpensesBudget { get; set; }
 
         public DbSet<ExpensesBudgetCategoryModel> ExpensesBudgetCategories { get; set; }
+        #endregion Budget Manager
+
+        #region Savings and Investments
+        public DbSet<SavingsTransactionModel> SavingsTransactions { get; set; }
+
+        public DbSet<InvestmentModel> Investments { get; set; }
+
+        public DbSet<SavingsTransactionTypeModel> SavingsTransactionTypes { get; set; }
+
+        public DbSet<InvestmentTypeModel> InvestmentTypes { get; set; }
+        #endregion Savings and Investments
     }
 }

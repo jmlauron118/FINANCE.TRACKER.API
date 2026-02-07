@@ -4,6 +4,7 @@ using FINANCE.TRACKER.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FINANCE.TRACKER.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260206074439_Recreate Savings and Investments Tables")]
+    partial class RecreateSavingsandInvestmentsTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -218,10 +221,10 @@ namespace FINANCE.TRACKER.API.Migrations
                     b.Property<int>("InvestmentTypeId")
                         .HasColumnType("int");
 
-                    b.Property<decimal?>("RelializedAmount")
+                    b.Property<decimal>("RelializedAmount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int?>("ReturnTransactionId")
+                    b.Property<int>("ReturnTransactionId")
                         .HasColumnType("int");
 
                     b.Property<int>("TransactionId")

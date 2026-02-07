@@ -17,33 +17,17 @@ namespace FINANCE.TRACKER.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class UserManagerController : Controller
+    public class UserManagerController
+        (
+            IUserService _userService,
+            IRoleService _roleService,
+            IActionService _actionService,
+            IModuleService _moduleService,
+            IUserRoleService _userRoleService,
+            IModuleActionService _moduleActionService,
+            IModuleAccessService _moduleAccessService
+        ) : Controller
     {
-        private readonly IUserService _userService;
-        private readonly IRoleService _roleService;
-        private readonly IActionService _actionService;
-        private readonly IModuleService _moduleService;
-        private readonly IUserRoleService _userRoleService;
-        private readonly IModuleActionService _moduleActionService;
-        private readonly IModuleAccessService _moduleAccessService;
-
-        public UserManagerController(IUserService userService,
-                                        IRoleService roleService,
-                                        IActionService actionService,
-                                        IModuleService moduleService,
-                                        IUserRoleService userRoleService,
-                                        IModuleActionService moduleActionService,
-                                        IModuleAccessService moduleAccessService)
-        {
-            _userService = userService;
-            _roleService = roleService;
-            _actionService = actionService;
-            _moduleService = moduleService;
-            _userRoleService = userRoleService;
-            _moduleActionService = moduleActionService;
-            _moduleAccessService = moduleAccessService;
-        }
-
         #region User
         [HttpGet("get-all-users")]
         public async Task<IActionResult> GetAllUsers(int status = 2)

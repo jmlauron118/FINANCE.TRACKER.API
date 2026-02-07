@@ -9,14 +9,8 @@ namespace FINANCE.TRACKER.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class DashboardController : Controller
+    public class DashboardController(IDashboardService _dashboardService) : Controller
     {
-        private readonly IDashboardService _dashboardService;
-        public DashboardController(IDashboardService dashboardService)
-        {
-            _dashboardService = dashboardService;
-        }
-
         [HttpGet("get-summary")]
         public async Task<IActionResult> GetSummmary()
         {
@@ -61,7 +55,7 @@ namespace FINANCE.TRACKER.API.Controllers
         [HttpGet("get-expenses-by-category")]
         public async Task<IActionResult> GetExpensesByCategory()
         {
-            return Ok(new ResponseModel<IEnumerable<ExpensesByCategoryDTO>>
+            return Ok(new ResponseModel<IEnumerable<ExpensesByCategoryResponseDTO>>
             {
                 Data = await _dashboardService.GetExpensesByCategory(),
                 Message = "Expenses by category fetched successfully."

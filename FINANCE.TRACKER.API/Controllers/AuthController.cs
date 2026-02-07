@@ -21,8 +21,8 @@ namespace FINANCE.TRACKER.API.Controllers
         private readonly IUserService _userService;
 
         public AuthController(
-            AppDbContext context, 
-            IJwtService jwtService, 
+            AppDbContext context,
+            IJwtService jwtService,
             IOptions<JwtSettings> jwtOptions,
             IUserService userService
         )

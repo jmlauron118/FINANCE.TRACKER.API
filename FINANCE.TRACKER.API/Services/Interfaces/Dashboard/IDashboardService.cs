@@ -8,7 +8,7 @@ namespace FINANCE.TRACKER.API.Services.Interfaces.Dashboard
         Task<IEnumerable<RecentTransactionsResponseDTO>> GetRecentTransactions();
         Task<IEnumerable<YTDIncomeResponseDTO>> GetYTDIncome();
         Task<MonthlyBudgetResponseDTO> GetMonthlyBudget();
-        Task<IEnumerable<ExpensesByCategoryDTO>> GetExpensesByCategory();
+        Task<IEnumerable<ExpensesByCategoryResponseDTO>> GetExpensesByCategory();
         Task<IEnumerable<ActivityResponseDTO>> GetActivity();
     }
 }

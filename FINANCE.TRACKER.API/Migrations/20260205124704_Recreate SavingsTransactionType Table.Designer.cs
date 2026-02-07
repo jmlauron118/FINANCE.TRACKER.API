@@ -4,6 +4,7 @@ using FINANCE.TRACKER.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FINANCE.TRACKER.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260205124704_Recreate SavingsTransactionType Table")]
+    partial class RecreateSavingsTransactionTypeTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -201,7 +204,7 @@ namespace FINANCE.TRACKER.API.Migrations
                     b.ToTable("ExpensesCategories");
                 });
 
-            modelBuilder.Entity("FINANCE.TRACKER.API.Models.Savings.InvestmentModel", b =>
+            modelBuilder.Entity("FINANCE.TRACKER.API.Models.SavingsAndInvestments.InvestmentModel", b =>
                 {
                     b.Property<int>("InvestmentId")
                         .ValueGeneratedOnAdd()
@@ -215,13 +218,20 @@ namespace FINANCE.TRACKER.API.Migrations
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("InvestmentTypeId")
                         .HasColumnType("int");
 
-                    b.Property<decimal?>("RelializedAmount")
+                    b.Property<decimal>("RelializedAmount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int?>("ReturnTransactionId")
+                    b.Property<int>("ReturnTransactionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<int>("TransactionId")
@@ -232,7 +242,7 @@ namespace FINANCE.TRACKER.API.Migrations
                     b.ToTable("Investments");
                 });
 
-            modelBuilder.Entity("FINANCE.TRACKER.API.Models.Savings.InvestmentTypeModel", b =>
+            modelBuilder.Entity("FINANCE.TRACKER.API.Models.SavingsAndInvestments.InvestmentTypeModel", b =>
                 {
                     b.Property<int>("InvestmentTypeId")
                         .ValueGeneratedOnAdd()
@@ -262,7 +272,7 @@ namespace FINANCE.TRACKER.API.Migrations
                     b.ToTable("InvestmentTypes");
                 });
 
-            modelBuilder.Entity("FINANCE.TRACKER.API.Models.Savings.SavingsTransactionModel", b =>
+            modelBuilder.Entity("FINANCE.TRACKER.API.Models.SavingsAndInvestments.SavingsTransactionModel", b =>
                 {
                     b.Property<int>("TransactionId")
                         .ValueGeneratedOnAdd()
@@ -286,9 +296,6 @@ namespace FINANCE.TRACKER.API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(150)");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
                     b.Property<int>("TransactionTypeId")
                         .HasColumnType("int");
 
@@ -297,7 +304,7 @@ namespace FINANCE.TRACKER.API.Migrations
                     b.ToTable("SavingsTransactions");
                 });
 
-            modelBuilder.Entity("FINANCE.TRACKER.API.Models.Savings.SavingsTransactionTypeModel", b =>
+            modelBuilder.Entity("FINANCE.TRACKER.API.Models.SavingsAndInvestments.SavingsTransactionTypeModel", b =>
                 {
                     b.Property<int>("TransactionTypeId")
                         .ValueGeneratedOnAdd()
@@ -315,10 +322,10 @@ namespace FINANCE.TRACKER.API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Direction")
+                    b.Property<int>("IsActive")
                         .HasColumnType("int");
 
-                    b.Property<int>("IsActive")
+                    b.Property<int>("IsDeduction")
                         .HasColumnType("int");
 
                     b.Property<string>("TransactionTypeName")

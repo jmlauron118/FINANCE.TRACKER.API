@@ -8,6 +8,7 @@
         public string? Description { get; set; }
         public decimal? Amount { get; set; }
         public DateTime DateUsed { get; set; }
+        public DateTime DateCreated { get; set; }
 
     }
 }

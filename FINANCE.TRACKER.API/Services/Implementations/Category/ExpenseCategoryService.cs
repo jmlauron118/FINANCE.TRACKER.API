@@ -16,7 +16,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Category
         public ExpenseCategoryService(AppDbContext context, IHttpContextAccessor contextAccessor) {
             _context = context;
             _contextAccessor = contextAccessor;
-            _userId = (int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0);
+            _userId = int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
         }
 
         public async Task<IEnumerable<ExpenseCategoryResponseDTO>> GetAllExpenseCategories(int status)
@@ -44,7 +44,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Category
                     IsActive = ec.IsActive
                 }).FirstOrDefaultAsync();
 
-            if (expenseCategory == null) throw new InvalidOperationException("Expense category not found");
+            if (expenseCategory == null) throw new InvalidOperationException("Expense category not found!");
 
             return expenseCategory;
         }
@@ -53,7 +53,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Category
         {
             var existingExpenseCategory = await _context.ExpensesCategories.FirstOrDefaultAsync(ec => ec.ExpensesCategoryName == expenseCategory.ExpenseCategoryName);
 
-            if(existingExpenseCategory != null) throw new InvalidOperationException("Expense category already exist");
+            if(existingExpenseCategory != null) throw new InvalidOperationException("Expense category already exist!");
 
             var newExpenseCategory = new ExpensesCategoryModel
             {
@@ -77,14 +77,11 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Category
                 ec.ExpensesCategoryId != expenseCategory.ExpenseCategoryId
             );
 
-            if (existingExpenseCategory != null)
-            {
-                throw new InvalidOperationException("Expense category already exist");
-            }
+            if (existingExpenseCategory != null) throw new InvalidOperationException("Expense category already exist!");
 
             var expenseCategoryToUpdate = await _context.ExpensesCategories.FindAsync(expenseCategory.ExpenseCategoryId);
 
-            if (expenseCategoryToUpdate == null) throw new InvalidOperationException("Expense category not found");
+            if (expenseCategoryToUpdate == null) throw new InvalidOperationException("Expense category not found!");
 
             expenseCategoryToUpdate.ExpensesCategoryName = expenseCategory.ExpenseCategoryName;
             expenseCategoryToUpdate.ExpensesCategoryDescription = expenseCategory.ExpenseCategoryDescription;

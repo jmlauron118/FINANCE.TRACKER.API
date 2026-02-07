@@ -49,9 +49,12 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Dashboard
             var currentBalance = totalIncome - totalSavings - budgetEntries
                 .Where(e => e.BudgetCategoryName.ToLower().Contains("expense"))
                 .Sum(e => e.Amount ?? 0m);
-            
-            var now = DateTime.Now;
-            var startOfMonth = new DateTime(now.Year, now.Month, 1);
+
+            var latestMonth = await _context.BudgetEntries
+                .Where(be => be.CreatedBy == _userId)
+                .MaxAsync(be => be.DateUsed);
+
+            var startOfMonth = new DateTime(latestMonth.Year, latestMonth.Month, 1);
             var startOfNextMonth = startOfMonth.AddMonths(1);
 
             var monthlyBudget = budgetEntries
@@ -80,7 +83,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Dashboard
             var recentTransactions = await (from be in _context.BudgetEntries
                                             join bc in _context.BudgetCategories on be.BudgetCagetoryId equals bc.BudgetCategoryId
                                             where be.CreatedBy == _userId
-                                            orderby be.DateUsed descending
+                                            orderby be.DateUsed descending, be.DateCreated descending
                                             select new RecentTransactionsResponseDTO
                                             {
                                                 BudgetEntryId = be.BudgetEntryId,
@@ -88,7 +91,8 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Dashboard
                                                 BudgetCategoryName = bc.BudgetCategoryName,
                                                 Description = be.Description,
                                                 Amount = be.Amount,
-                                                DateUsed = be.DateUsed
+                                                DateUsed = be.DateUsed,
+                                                DateCreated = be.DateCreated
                                             }).Take(10).ToListAsync();
 
             return recentTransactions;
@@ -158,7 +162,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Dashboard
             };
         }
 
-        public async Task<IEnumerable<ExpensesByCategoryDTO>> GetExpensesByCategory()
+        public async Task<IEnumerable<ExpensesByCategoryResponseDTO>> GetExpensesByCategory()
         {
             var latestMonth = await _context.BudgetEntries
                 .Where(be => be.CreatedBy == _userId && be.ExpenseCategoryId != null)
@@ -171,7 +175,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Dashboard
                                       where be.CreatedBy == _userId && be.ExpenseCategoryId != null
                                       && (be.DateUsed >= startOfMonth && be.DateUsed < startOfNextMonth)
                                       group be by ec.ExpensesCategoryName into g
-                                      select new ExpensesByCategoryDTO
+                                      select new ExpensesByCategoryResponseDTO
                                       {
                                           ExpenseCategoryName = g.Key,
                                           Amount = g.Sum(be => be.Amount),

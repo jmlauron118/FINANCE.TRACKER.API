@@ -17,7 +17,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Category
         {
             _context = context;
             _contextAccessor = contextAccessor;
-            _userId = (int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0);
+            _userId = int.TryParse(_contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
         }
 
         public async Task<IEnumerable<BudgetCategoryResponseDTO>> GetAllBudgetCategories(int status)
@@ -45,7 +45,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Category
                     IsActive = bc.IsActive
                 }).FirstOrDefaultAsync();
 
-            if (budgetCategory == null) throw new InvalidOperationException("Budget category not found");
+            if (budgetCategory == null) throw new InvalidOperationException("Budget category not found!");
 
             return budgetCategory;
         }
@@ -54,7 +54,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Category
         {
             var existingBudgetCategory = await _context.BudgetCategories.FirstOrDefaultAsync(bc => bc.BudgetCategoryName == budgetCategory.BudgetCategoryName);
 
-            if (existingBudgetCategory != null) throw new InvalidOperationException("Budget category already exist");
+            if (existingBudgetCategory != null) throw new InvalidOperationException("Budget category already exist!");
 
             var newBudgetCategory = new BudgetCategoryModel
             {
@@ -78,11 +78,11 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Category
                     bc.BudgetCategoryId != budgetCategory.BudgetCategoryId
                 );
 
-            if (existingBudgetCategory != null) throw new InvalidOperationException("Budget category already exist");
+            if (existingBudgetCategory != null) throw new InvalidOperationException("Budget category already exist!");
 
             var budgetCategoryToUpdate = await _context.BudgetCategories.FindAsync(budgetCategory.BudgetCategoryId);
 
-            if (budgetCategoryToUpdate == null) throw new InvalidOperationException("Budget category not found");
+            if (budgetCategoryToUpdate == null) throw new InvalidOperationException("Budget category not found!");
 
             budgetCategoryToUpdate.BudgetCategoryName = budgetCategory.BudgetCategoryName;
             budgetCategoryToUpdate.BudgetCategoryDescription = budgetCategory.BudgetCategoryDescription;

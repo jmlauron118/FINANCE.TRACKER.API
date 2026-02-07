@@ -12,18 +12,8 @@ namespace FINANCE.TRACKER.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class BudgetManagerController : Controller
+    public class BudgetManagerController(IBudgetEntryService _budgetManagerService, IExpensesBudgetService _expensesBudgetService) : Controller
     {
-        private readonly IBudgetEntryService _budgetManagerService;
-        private readonly IExpensesBudgetService _expensesBudgetService;
-
-        public BudgetManagerController(IBudgetEntryService budgetManagerService,
-            IExpensesBudgetService expensesBudgetService)
-        {
-            _budgetManagerService = budgetManagerService;
-            _expensesBudgetService = expensesBudgetService;
-        }
-
         #region Budget Entry
         [HttpGet("get-budget-entires")]
         public async Task<IActionResult> GetAllBudgetEntires([FromQuery] BudgetEntryParameters budgetEntryParameters)

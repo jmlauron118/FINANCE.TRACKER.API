@@ -1,6 +1,8 @@
 ﻿using FINANCE.TRACKER.API.Models;
 using FINANCE.TRACKER.API.Models.DTO.Category.BudgetCategoryDTO;
 using FINANCE.TRACKER.API.Models.DTO.Category.ExpenseCategoryDTO;
+using FINANCE.TRACKER.API.Models.DTO.Savings.InvestmentTypeDTO;
+using FINANCE.TRACKER.API.Models.DTO.Savings.SavingsTransactionTypeDTO;
 using FINANCE.TRACKER.API.Services.Interfaces.Category;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,18 +12,14 @@ namespace FINANCE.TRACKER.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class CategoryController : Controller
+    public class CategoryController
+        (
+            IBudgetCategoryService _budgetCategoryService,
+            IExpenseCategoryService _expenseCategoryService,
+            ISavingsTransactionTypeService _transactionTypeService,
+            IInvestmentTypeService _investmentTypeService
+        ) : Controller
     {
-        private readonly IBudgetCategoryService _budgetCategoryService;
-        private readonly IExpenseCategoryService _expenseCategoryService;
-
-        public CategoryController(IBudgetCategoryService budgetCategoryService,
-                                    IExpenseCategoryService expenseCategoryService)
-        {
-            _budgetCategoryService = budgetCategoryService;
-            _expenseCategoryService = expenseCategoryService;
-        }
-
         #region Budget Category
         [HttpGet("get-all-budget-categories")]
         public async Task<IActionResult> GetAllBudgetCategories(int status = 2)
@@ -120,5 +118,97 @@ namespace FINANCE.TRACKER.API.Controllers
             }
         }
         #endregion Expense Category
+
+        #region Savings Transaction Type
+        [HttpGet("get-all-savings-transaction-types")]
+        public async Task<IActionResult> GetAllSavingsTransactionTypes(int status = 2, int type = 2)
+        {
+            return Ok(new ResponseModel<IEnumerable<SavingsTransactionTypeResponseDTO>>
+            {
+                Data = await _transactionTypeService.GetAllSavingsTransactionTypes(status, type),
+                Message = "Savings transaction types fetched successfully!"
+            });
+        }
+
+        [HttpPost("add-savings-transaction-type")]
+        public async Task<IActionResult> AddSavingsTransactionType(SavingsTransactionTypeRequestDTO request)
+        {
+            try
+            {
+                return Created(string.Empty, new ResponseModel<SavingsTransactionTypeResponseDTO>
+                {
+                    Data = await _transactionTypeService.AddSavingsTransactionType(request),
+                    Message = "Savings transaction type added successfully!"
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("modify-savings-transaction-type")]
+        public async Task<IActionResult> ModifySavingsTransactionType(SavingsTransactionTypeModifyDTO request)
+        {
+            try
+            {
+                return Ok(new ResponseModel<SavingsTransactionTypeResponseDTO>
+                {
+                    Data = await _transactionTypeService.ModifySavingsTransactionType(request),
+                    Message = "Savings transaction type modified successfully!!"
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+        }
+        #endregion Savings Transaction Type
+
+        #region Investment Type
+        [HttpGet("get-all-investment-types")]
+        public async Task<IActionResult> GetAllInvestmentTypes(int status = 2)
+        {
+            return Ok(new ResponseModel<IEnumerable<InvestmentTypeResponseDTO>>
+            {
+                Data = await _investmentTypeService.GetAllInvestmentTypes(status),
+                Message = "Investment types fetched successfully!"
+            });
+        }
+
+        [HttpPost("add-investment-type")]
+        public async Task<IActionResult> AddInvestmentType(InvestmentTypeRequestDTO request)
+        {
+            try
+            {
+                return Created(string.Empty, new ResponseModel<InvestmentTypeResponseDTO>
+                {
+                    Data = await _investmentTypeService.AddInvestmentType(request),
+                    Message = "Investment type added successfully!"
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("modify-investment-type")]
+        public async Task<IActionResult> ModifyInvestmentType(InvestmentTypeModifyDTO request)
+        {
+            try
+            {
+                return Ok(new ResponseModel<InvestmentTypeResponseDTO>
+                {
+                    Data = await _investmentTypeService.ModifyInvestmentType(request),
+                    Message = "Investment type modified successfully!!"
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+        }
+        #endregion Investment Type
     }
 }

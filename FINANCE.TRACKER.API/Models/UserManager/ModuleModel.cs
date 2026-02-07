@@ -17,7 +17,7 @@ namespace FINANCE.TRACKER.API.Models.UserManager
         [Column(TypeName = "nvarchar(50)")]
         public string? ModulePage { get; set; }
 
-        [Column(TypeName = "nvarchar(25)")]
+        [Column(TypeName = "nvarchar(50)")]
         public string? Icon { get; set; }
 
         public int ParentId { get; set; }
