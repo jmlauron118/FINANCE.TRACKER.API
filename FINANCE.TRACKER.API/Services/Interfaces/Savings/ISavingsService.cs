@@ -8,5 +8,6 @@ namespace FINANCE.TRACKER.API.Services.Interfaces.Savings
         Task AddSavingsTransaction(SavingsTransactionRequestDTO request);
         Task ModifySavingsTransaction(SavingsTransactionModifyDTO request);
         Task RemoveSavingsTransaction(int transactionId);
+        Task<SavingsSummaryResponseDTO> GetSavingsSummary();
     }
 }

@@ -1,5 +1,5 @@
 ﻿using FINANCE.TRACKER.API.Data;
-using FINANCE.TRACKER.API.Models.DTO.Savings.InvestmentDTO;
+using FINANCE.TRACKER.API.Models.DTO.BudgetManager.BudgetEntry;
 using FINANCE.TRACKER.API.Models.DTO.Savings.SavingsTransactionDTO;
 using FINANCE.TRACKER.API.Models.Savings;
 using FINANCE.TRACKER.API.Services.Interfaces.Savings;
@@ -34,6 +34,7 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Savings
                           join i in _context.Investments on st.TransactionId equals i.TransactionId into iGroup
                           from ig in iGroup.DefaultIfEmpty() 
                           where st.CreatedBy == _userid
+                          orderby st.DateUsed descending
                           select new SavingsTransactionResponseDTO
                           {
                               TransactionId = st.TransactionId,
@@ -108,17 +109,20 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Savings
 
                 await _context.SaveChangesAsync();
 
+                var investmentToUpdate = await _context.Investments.SingleOrDefaultAsync(i => i.TransactionId == request.TransactionId);
+
+                if (investmentToUpdate == null) throw new InvalidOperationException("Investment details not found!");
+
                 if (request.TransactionTypeId == (int)TransactionType.Investment)
                 {
-                    var investmentToUpdate = await _context.Investments.SingleOrDefaultAsync(i => i.TransactionId == request.TransactionId);
-
-                    if (investmentToUpdate == null) throw new InvalidOperationException("Investment details not found!");
-
                     investmentToUpdate.InvestmentTypeId = request.InvestmentTypeId ?? 0;
-
-                    await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    _context.Investments.Remove(investmentToUpdate);
                 }
 
+                await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
             catch
@@ -160,5 +164,38 @@ namespace FINANCE.TRACKER.API.Services.Implementations.Savings
             }
         }
 
+        public async Task<SavingsSummaryResponseDTO> GetSavingsSummary()
+        {
+            var transactionData = await _context.SavingsTransactions
+                .Where(st => st.CreatedBy == _userid)
+                .ToListAsync();
+
+            var savingsData = await _context.BudgetEntries
+                .Where(be => be.BudgetCagetoryId == 2 && be.CreatedBy == _userid)
+                .Select(be => new BudgetEntryResponseDTO
+                {
+                    BudgetEntryId = be.BudgetEntryId,
+                    BudgetCategoryId = be.BudgetCagetoryId,
+                    ExpenseCategoryId = be.ExpenseCategoryId,
+                    Description = be.Description,
+                    Amount = be.Amount,
+                    DateUsed = be.DateUsed
+                }).ToListAsync();
+
+            var totalSavings = savingsData.Sum(be => be.Amount ?? 0m);
+            var expenses = transactionData.Where(ex => ex.TransactionTypeId == 1).Sum(ex => ex.Amount);
+            var investment = transactionData.Where(ex => ex.TransactionTypeId == 2).Sum(ex => ex.Amount);
+            var gain = transactionData.Where(ex => ex.TransactionTypeId == 3).Sum(ex => ex.Amount);
+            var remainingSavings = totalSavings - (expenses + investment) + gain;
+
+            return new SavingsSummaryResponseDTO
+            {
+                TotalSavings = totalSavings,
+                TotalExpenses = expenses,
+                TotalInvestment = investment,
+                TotalGains = gain,
+                RemainingSavings = remainingSavings
+            };
+        }
     }
 }
